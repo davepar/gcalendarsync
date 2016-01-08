@@ -16,17 +16,17 @@ The user's current time zone is used when none is specified.
 ## Set Up
 
 Follow these steps to set up the calendar, spreadsheet, and script:
-1. Create a new Google Calendar (in the dropdown next to "My calendars" in the left sidebar
+* Create a new Google Calendar (in the dropdown next to "My calendars" in the left sidebar
   of Calendar).
-1. Give the calendar a name and change other fields as desired, i.e. set up sharing.
-1. Open the new calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
-1. Copy the "Calendar ID" from the Calendar Address section. It should look like an email address.
-1. Create a Google Spreadsheet at http://drive.google.com.
-1. In the Tools menu, select Script Editor.
-1. Give the project a name.
-1. Paste in the code from gcalendarsync.js.
-1. For the "calendarId" value in the script, paste in the Calendar ID from above.
-1. Save the script.
+* Give the calendar a name and change other fields as desired, i.e. set up sharing.
+* Open the new calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
+* Copy the "Calendar ID" from the Calendar Address section. It should look like an email address.
+* Create a Google Spreadsheet at http://drive.google.com.
+* In the Tools menu, select Script Editor.
+* Give the project a name.
+* Paste in the code from gcalendarsync.js.
+* For the "calendarId" value in the script, paste in the Calendar ID from above.
+* Save the script.
 
 Now set up the spreadsheet. You can either copy
 [this spreadsheet](https://docs.google.com/spreadsheets/d/1vRMycgL3wHSdYaww8Ony0_6ajZZN_FpVvKaefPJg7gI)
