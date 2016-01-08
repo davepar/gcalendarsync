@@ -48,7 +48,8 @@ Multi-day all-day events must have one entry for each day. This is a limitation 
 
 ## How to Sync
 
-In the spreadsheet, look for a "Calendar Sync" menu and choose "Update Calendar".
+In the spreadsheet, look for a "Calendar Sync" menu and choose "Update Calendar". The first
+time you run it, a dialog will pop up asking for permissions to edit the calendar and spreadsheet.
 Depending on the number of changes, the script runs in a couple seconds to a couple of minutes.
 If it runs more than several minutes, the script will be stopped. Try adding or updating events
 in smaller batches. Maybe 200 at a time?
