@@ -1,14 +1,7 @@
 // Script to synchronize a calendar to a spreadsheet.
 //
-// Note that the spreadsheet is considered the definitive source for events. Calendar entries
-// will be added, modified, and deleted to make the calendar match the spreadsheet.
-// The first row of the spreadsheet should be the following column labels:
-// Title, Description, Start Time, End time, All Day Event (true/false), Location (optional), Id (leave blank)
-// Only the date of "Start Time" is used for "all day" events. Id is used for associating events between the
-// spreadsheet and the calendar. Columns can be in any order, and extra columns can be added.
+// See https://github.com/Davepar/gcalendarsync for instructions on setting this up.
 //
-// Multi-day all-day events, must have one entry for each day. This is a limitation of Calendar.
-// Does not currently support recurring events.
 
 // Set these two values to match your calendar.
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.

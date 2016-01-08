@@ -1,8 +1,7 @@
 # gcalendarsync
-Apps Script for syncing a Google Spreadsheet with Google Calendar.
-
-This script will add, update, and remove events in a Google Calendar to match entries in a
-Google Spreadsheet.
+Apps Script for syncing a Google Spreadsheet with Google Calendar. Events can be entered in a
+spreadsheet, and this script will add, update, and remove events in a Google Calendar to match
+the entries.
 
 ## Limitations
 
@@ -16,15 +15,17 @@ The user's current time zone is used when none is specified.
 
 ## Set Up
 
-* Create a new Google Calendar (in the dropdown next to "My calendars" in the left sidebar).
-* Give the Calendar a name and change other fields as desired.
-* Open the new Calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
+Follow these steps to set up the calendar, spreadsheet, and script:
+* Create a new Google Calendar (in the dropdown next to "My calendars" in the left sidebar
+  of Calendar).
+* Give the calendar a name and change other fields as desired, i.e. set up sharing.
+* Open the new calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
 * Copy the "Calendar ID" from the Calendar Address section. It should look like an email address.
 * Create a Google Spreadsheet at http://drive.google.com.
 * In the Tools menu, select Script Editor.
 * Give the project a name.
 * Paste in the code from gcalendarsync.js.
-* Paste in the Calendar ID from above in the "calendarId" value in the script.
+* For the "calendarId" value in the script, paste in the Calendar ID from above.
 * Save the script.
 
 Now set up the spreadsheet. You can either copy
@@ -34,7 +35,7 @@ Now set up the spreadsheet. You can either copy
 * Switch back to the spreadsheet, and create columns with these names (can be in any order):
   * Title - event title
   * Description - event description
-  * Start Time - start date and time for the event, e.g. "1/27/2016 5:25pm". Can be just a date
+  * Start Time - start date and time for the event, e.g. "1/27/2016 5:25pm". Should be just a date
     for all-day events.
   * End Time - end date and time for the event. Ignored for all-day events.
   * All Day Event - true/false value.
@@ -45,7 +46,7 @@ That's it. Start entering and modifying events. You can add extra columns, and t
 
 Multi-day all-day events must have one entry for each day. This is a limitation of Calendar.
 
-## Use
+## How to Sync
 
 In the spreadsheet, look for a "Calendar Sync" menu and choose "Update Calendar".
 Depending on the number of changes, the script runs in a couple seconds to a couple of minutes.
