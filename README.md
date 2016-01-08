@@ -21,18 +21,17 @@ Follow these steps to set up the calendar, spreadsheet, and script:
 * Give the calendar a name and change other fields as desired, i.e. set up sharing.
 * Open the new calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
 * Copy the "Calendar ID" from the Calendar Address section. It should look like an email address.
-* Create a Google Spreadsheet at http://drive.google.com.
+* Make a copy of
+  [this spreadsheet](https://docs.google.com/spreadsheets/d/1vRMycgL3wHSdYaww8Ony0_6ajZZN_FpVvKaefPJg7gI)
+  (use File -> Make a copy).
 * In the Tools menu, select Script Editor.
-* Give the project a name.
-* Paste in the code from gcalendarsync.js.
 * For the "calendarId" value in the script, paste in the Calendar ID from above.
 * Save the script.
 
-Now set up the spreadsheet. You can either copy
-[this spreadsheet](https://docs.google.com/spreadsheets/d/1vRMycgL3wHSdYaww8Ony0_6ajZZN_FpVvKaefPJg7gI)
-(use File -> Make a copy), or create one from scratch following these steps:
+If you want to create a spreadsheet from scratch, or use one you already have:
 
-* Switch back to the spreadsheet, and create columns with these names (can be in any order):
+* Create or open a Google Spreadsheet at http://drive.google.com.
+* Create columns with these names (can be in any order):
   * Title - event title
   * Description - event description
   * Start Time - start date and time for the event, e.g. "1/27/2016 5:25pm". Should be just a date
@@ -41,6 +40,11 @@ Now set up the spreadsheet. You can either copy
   * All Day Event - true/false value.
   * Location - optional event location.
   * Id - used for syncing with calendar. This column could be hidden to prevent accidental edits.
+* In the Tools menu, select Script Editor.
+* Give the project a name.
+* Paste in the code from gcalendarsync.js.
+* For the "calendarId" value in the script, paste in the Calendar ID from above.
+* Save the script.
 
 That's it. Start entering and modifying events. You can add extra columns, and they'll be ignored.
 
