@@ -22,7 +22,7 @@ Follow these steps to set up the calendar, spreadsheet, and script:
 * Open the new calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
 * Copy the "Calendar ID" from the Calendar Address section. It should look like an email address.
 * Make a copy of
-  [this spreadsheet](https://docs.google.com/spreadsheets/d/1vRMycgL3wHSdYaww8Ony0_6ajZZN_FpVvKaefPJg7gI)
+  [this spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
   (use File -> Make a copy).
 * In the Tools menu, select Script Editor.
 * For the "calendarId" value in the script, paste in the Calendar ID from above.
@@ -35,14 +35,16 @@ If you want to create a spreadsheet from scratch, or use one you already have:
   * Title - event title
   * Description - event description
   * Start Time - start date and time for the event, e.g. "1/27/2016 5:25pm". Should be just a date
-    for all-day events.
-  * End Time - end date and time for the event. Ignored for all-day events.
+    for all-day events. Set the format of this column to "Date time".
+  * End Time - end date and time for the event. Ignored for all-day events.  Set the format of this
+    column to "Date time".
   * All Day Event - true/false value.
   * Location - optional event location.
   * Id - used for syncing with calendar. This column could be hidden to prevent accidental edits.
 * In the Tools menu, select Script Editor.
 * Give the project a name.
-* Paste in the code from gcalendarsync.js.
+* Paste in the code from
+  [gcalendarsync.js](https://raw.githubusercontent.com/Davepar/gcalendarsync/master/gcalendarsync.js).
 * For the "calendarId" value in the script, paste in the Calendar ID from above.
 * Save the script.
 
@@ -59,6 +61,11 @@ Depending on the number of changes, the script runs in a couple seconds to a cou
 ## Troubleshooting
 
 When an error occurs, the sync can generally be tried again without any bad side effects.
+
+There are some data checks in the script for correctly formatted dates and times. If you see a
+pop-up dialog, it will tell you which event has the error. Fix the error and run it again. See the
+[test spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
+for examples of correct and incorrect date/times.
 
 If the script runs more than several minutes, it will be stopped. Try adding or updating
 events in smaller batches--maybe a few hundred at a time? Or you can try reducing the number in the

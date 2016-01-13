@@ -54,6 +54,12 @@ function eventMatches(cev, sev) {
             cev.getLocation() == sev.location;
 }
 
+// Display error alert
+function errorAlert(msg, evt, ridx) {
+  var ui = SpreadsheetApp.getUi();
+  ui.alert('Skipping row: ' + msg + ' in event "' + evt.title + '", row ' + (ridx + 1));
+}
+
 // Synchronize spreadsheet to calendar.
 function syncCalendar() {
   // Get calendar and events
@@ -76,6 +82,25 @@ function syncCalendar() {
   var changesMade = false;
   for (var ridx = 1; ridx < data.length; ridx++) {
     var eventFromSheet = reformatEvent(data[ridx], idxMap);
+
+    // Do some error checking first
+    if (!eventFromSheet.title) {
+      errorAlert('must have title', eventFromSheet, ridx);
+      continue;
+    }
+    if (!(eventFromSheet.starttime instanceof Date)) {
+      errorAlert('start time must be a date/time', eventFromSheet, ridx);
+      continue;
+    }
+    if (!eventFromSheet.alldayevent && !(eventFromSheet.endtime instanceof Date)) {
+      errorAlert('end time must be a date/time', eventFromSheet, ridx);
+      continue;
+    }
+    if (!eventFromSheet.alldayevent && eventFromSheet.endtime < eventFromSheet.starttime) {
+      errorAlert('end time must be after start time for event', eventFromSheet, ridx);
+      continue;
+    }
+
     var addEvent = true;
     if (eventFromSheet.id) {
       var eventIdx = eventIds.indexOf(eventFromSheet.id);
