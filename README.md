@@ -61,9 +61,10 @@ alternative is to create a regular event that spans multiple days, e.g. 3/1/2016
 
 ## How to Sync
 
-In the spreadsheet, look for a "Calendar Sync" menu and choose "Update Calendar". The first
+In the spreadsheet, select the desired sheet (tabs at the bottom of the spreadsheet) and then look
+for a "Calendar Sync" menu and choose "Update to Calendar". The first
 time you run it, a dialog will pop up asking for authorization to manage the calendar and spreadsheet.
-Depending on the number of changes, the script runs in a couple seconds to a couple of minutes.
+Depending on the number of changes, the script runs in a few seconds to a few minutes.
 
 ## Troubleshooting
 
