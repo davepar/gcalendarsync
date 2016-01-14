@@ -6,7 +6,6 @@
 // Set these two values to match your calendar.
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
 var calendarId = 'YOUR CALENDAR ID HERE'
-var sheetName = 'Sheet1'
 
 var fields = ['title', 'description', 'starttime', 'endtime', 'alldayevent', 'location', 'id'];
 
@@ -14,7 +13,7 @@ var fields = ['title', 'description', 'starttime', 'endtime', 'alldayevent', 'lo
 function onOpen() {
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var menuEntries = [{
-    name: "Update Calendar",
+    name: "Update to Calendar",
     functionName: "syncCalendar"
   }];
   spreadsheet.addMenu('Calendar Sync', menuEntries);
@@ -69,7 +68,7 @@ function syncCalendar() {
 
   // Get spreadsheet and data
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = spreadsheet.getSheetByName(sheetName);
+  var sheet = spreadsheet.getActiveSheet();
   var range = sheet.getDataRange();
   var data = range.getValues();
 
