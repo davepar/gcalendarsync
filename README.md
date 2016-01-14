@@ -15,12 +15,18 @@ The user's current time zone is used when none is specified.
 
 ## Set Up
 
-Follow these steps to set up the calendar, spreadsheet, and script:
+Part 1. Set up the calendar:
 * Create a new Google Calendar (in the dropdown next to "My calendars" in the left sidebar
   of Calendar).
 * Give the calendar a name and change other fields as desired, i.e. set up sharing.
 * Open the new calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
 * Copy the "Calendar ID" from the Calendar Address section. It should look like an email address.
+
+You have 2 options at this point. Copy an example spreadsheet, or set up your own. I highly
+recommend the first, because it's known to work. Creating or using your own spreadsheet may
+take some extra fiddling with formats.
+
+Part 2a. Copy and modify the example spreadsheet:
 * Make a copy of
   [this spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
   (use File -> Make a copy).
@@ -28,8 +34,7 @@ Follow these steps to set up the calendar, spreadsheet, and script:
 * For the "calendarId" value in the script, paste in the Calendar ID from above.
 * Save the script.
 
-If you want to create a spreadsheet from scratch, or use one you already have:
-
+Part 2b. If instead you want to create a new spreadsheet from scratch, or use one you already have:
 * Create or open a Google Spreadsheet at http://drive.google.com.
 * Create columns with these names (can be in any order):
   * Title - event title
@@ -50,12 +55,14 @@ If you want to create a spreadsheet from scratch, or use one you already have:
 
 That's it. Start entering and modifying events. You can add extra columns, and they'll be ignored.
 
-Multi-day all-day events must have one entry for each day. This is a limitation of Calendar.
+Multi-day all-day events must have one entry for each day. This is a limitation of Calendar. An
+alternative is to create a regular event that spans multiple days, e.g. 3/1/2016 00:00 to
+3/3/2016 23:59.
 
 ## How to Sync
 
 In the spreadsheet, look for a "Calendar Sync" menu and choose "Update Calendar". The first
-time you run it, a dialog will pop up asking for permissions to edit the calendar and spreadsheet.
+time you run it, a dialog will pop up asking for authorization to manage the calendar and spreadsheet.
 Depending on the number of changes, the script runs in a couple seconds to a couple of minutes.
 
 ## Troubleshooting
