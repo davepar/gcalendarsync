@@ -1,15 +1,14 @@
 # gcalendarsync
-Apps Script for syncing a Google Spreadsheet with Google Calendar. Events can be entered in a
-spreadsheet, and this script will add, update, and remove events in a Google Calendar to match
-the entries.
+Apps Script for syncing a Google Spreadsheet with Google Calendar. Two commands are added in a
+"Calendar Sync" menu. One copies events from a calendar into a spreadsheet. The other commands
+goes in the opposite direction, spreadsheet to calendar.
 
 ## Limitations
 
-The script only syncs events in one direction, from the spreadsheet to the calendar. I've thought
-about how to go the other direction, but it's not implemented yet. So any changes made manually
-in the calendar will be wiped out.
-The spreadsheet is considered the definitive source for events. Calendar entries
-will be added, updated, and removed to make the calendar match the spreadsheet.
+WARNING: Events will be removed! If you're copying to the calendar, any event not found in the
+spreadsheet will be deleted! Likewise copying to the spreadsheet will delete any rows not found
+in the calendar. It's a good idea to try copying into a new spreadsheet tab the first time you
+run it. "Undo" may also save you.
 
 Recurring events are not currenty supported.
 
@@ -64,7 +63,8 @@ alternative is to create a regular event that spans multiple days, e.g. 3/1/2016
 ## How to Sync
 
 In the spreadsheet, select the desired sheet (tabs at the bottom of the spreadsheet) and then look
-for a "Calendar Sync" menu and choose "Update to Calendar". The first
+for a "Calendar Sync" menu. Choose "Update from Calendar" or "Update to Calendar" depending on the
+direction you want to sync. The first
 time you run it, a dialog will pop up asking for authorization to manage the calendar and spreadsheet.
 Depending on the number of changes, the script runs in a few seconds to a few minutes.
 

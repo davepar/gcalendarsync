@@ -1,16 +1,16 @@
-// Script to synchronize a calendar to a spreadsheet.
+// Script to synchronize a calendar to a spreadsheet and vice versa.
 //
 // See https://github.com/Davepar/gcalendarsync for instructions on setting this up.
 //
 
-// Set these two values to match your calendar.
+// Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
 var calendarId = 'YOUR CALENDAR ID HERE'
 
 var titleRow = ['Title', 'Description', 'Location', 'Start Time', 'End Time', 'All Day Event', 'Id'];
 var fields = titleRow.map(function(entry) {return entry.toLowerCase().replace(/ /g, '');});
 
-// Adds a custom menu to the active spreadsheet.
+// Adds the custom menu to the active spreadsheet.
 function onOpen() {
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   var menuEntries = [
@@ -168,7 +168,7 @@ function syncFromCalendar() {
 
   // Remove any data rows not found in the calendar
   var rowsDeleted = 0;
-  for (var idx = 1; idx < eventFound.length; idx++) {
+  for (var idx = eventFound.length - 1; idx > 0; idx--) {
     if (!eventFound[idx]) {
       data.splice(idx, 1);
       rowsDeleted++;
