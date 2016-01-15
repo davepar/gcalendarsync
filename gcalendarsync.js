@@ -5,7 +5,7 @@
 
 // Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
-var calendarId = 'YOUR CALENDAR ID HERE'
+var calendarId = 'YOUR CALENDAR ID HERE';
 
 var titleRow = ['Title', 'Description', 'Location', 'Start Time', 'End Time', 'All Day Event', 'Id'];
 var fields = titleRow.map(function(entry) {return entry.toLowerCase().replace(/ /g, '');});
@@ -178,7 +178,7 @@ function syncFromCalendar() {
   // Save spreadsheet changes
   range = sheet.getRange(1, 1, data.length, data[0].length);
   range.setValues(data);
-  if (rowsDeleted > 0 && data.length > 0) {
+  if (rowsDeleted > 0) {
     sheet.deleteRows(data.length + 1, rowsDeleted);
   }
 }
@@ -267,15 +267,30 @@ function syncToCalendar() {
       }
     }
   }
+
   // Save spreadsheet changes
   if (changesMade) {
     range.setValues(data);
   }
+
   // Remove any calendar events not found in the spreadsheet
-  calEventIds.forEach(function(id, idx) {
-    if (id != null) {
-      calEvents[idx].deleteEvent();
-      Utilities.sleep(10);
+  var numToRemove = calEventIds.reduce(function(prevVal, curVal) {
+    if (curVal !== null) {
+      prevVal++;
     }
-  });
+    return prevVal;
+  }, 0);
+  if (numToRemove > 0) {
+    var ui = SpreadsheetApp.getUi();
+    var response = ui.alert('Delete ' + numToRemove + ' calendar event(s) not found in spreadsheet?',
+        ui.ButtonSet.YES_NO);
+    if (response == ui.Button.YES) {
+      calEventIds.forEach(function(id, idx) {
+        if (id != null) {
+          calEvents[idx].deleteEvent();
+          Utilities.sleep(10);
+        }
+      });
+    }
+  }
 }
