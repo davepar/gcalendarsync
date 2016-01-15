@@ -5,7 +5,9 @@ the entries.
 
 ## Limitations
 
-Any changes made manually in the calendar will be wiped out.
+The script only syncs events in one direction, from the spreadsheet to the calendar. I've thought
+about how to go the other direction, but it's not implemented yet. So any changes made manually
+in the calendar will be wiped out.
 The spreadsheet is considered the definitive source for events. Calendar entries
 will be added, updated, and removed to make the calendar match the spreadsheet.
 
