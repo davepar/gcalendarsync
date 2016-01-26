@@ -12,8 +12,6 @@ run it. "Undo" may also save you.
 
 Recurring events are not currenty supported.
 
-The user's current time zone is used when none is specified.
-
 ## Set Up
 
 Part 1. Set up the calendar:
@@ -33,6 +31,7 @@ Part 2a. Copy and modify the example spreadsheet:
   (use File -> Make a copy).
 * In the Tools menu, select Script Editor.
 * For the "calendarId" value in the script, paste in the Calendar ID from above.
+* Set the correct time zone in File, Spreadsheet settings.
 * Save the script.
 
 Part 2b. If instead you want to create a new spreadsheet from scratch, or use one you already have:
@@ -59,6 +58,12 @@ That's it. Start entering and modifying events. You can add extra columns, and t
 Multi-day all-day events must have one entry for each day. This is a limitation of Calendar. An
 alternative is to create a regular event that spans multiple days, e.g. 3/1/2016 00:00 to
 3/3/2016 23:59.
+
+## Time zones
+
+There doesn't seem to be a way to enter a time zone for individual events into Google Spreadsheet.
+The only option is to change the timezone for the entire spreadsheet. Look in the File menu,
+Spreadsheet settings ([more info](https://support.google.com/docs/answer/58515?hl=en)).
 
 ## How to Sync
 
