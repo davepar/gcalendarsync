@@ -195,6 +195,7 @@ function syncToCalendar() {
   var sheet = spreadsheet.getActiveSheet();
   var range = sheet.getDataRange();
   var data = range.getValues();
+  var formulas = range.getFormulas();
   if (data.length < 2) {
     errorAlert('Spreadsheet must have a title row and at least one data row');
     return;
@@ -271,6 +272,7 @@ function syncToCalendar() {
   // Save spreadsheet changes
   if (changesMade) {
     range.setValues(data);
+    range.setFormulas(formulas);
   }
 
   // Remove any calendar events not found in the spreadsheet
