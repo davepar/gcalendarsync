@@ -195,7 +195,6 @@ function syncToCalendar() {
   var sheet = spreadsheet.getActiveSheet();
   var range = sheet.getDataRange();
   var data = range.getValues();
-  var formulas = range.getFormulas();
   if (data.length < 2) {
     errorAlert('Spreadsheet must have a title row and at least one data row');
     return;
@@ -204,6 +203,8 @@ function syncToCalendar() {
   // Map headers to indices
   var idxMap = createIdxMap(data[0]);
   var idIdx = idxMap.indexOf('id');
+  var idRange = range.offset(0, idIdx, data.length, 1);
+  var idData = idRange.getValues()
 
   // Verify header has all required fields
   if (fieldsMissing(idxMap)) {
@@ -212,7 +213,8 @@ function syncToCalendar() {
   }
 
   // Loop through spreadsheet rows
-  var numUpdates = 0;
+  var numAdds = 0;
+  var numUpdated = 0;
   var changesMade = false;
   for (var ridx = 1; ridx < data.length; ridx++) {
     var sheetEvent = reformatEvent(data[ridx], idxMap);
@@ -235,6 +237,7 @@ function syncToCalendar() {
       continue;
     }
 
+    // Determine if spreadsheet event is already in calendar and matches
     var addEvent = true;
     if (sheetEvent.id) {
       var eventIdx = calEventIds.indexOf(sheetEvent.id);
@@ -246,6 +249,7 @@ function syncToCalendar() {
         } else {
           // Delete and re-create event. It's easier than updating in place.
           calEvent.deleteEvent();
+          numUpdated++;
         }
       }
     }
@@ -257,22 +261,21 @@ function syncToCalendar() {
         newEvent = calendar.createEvent(sheetEvent.title, sheetEvent.starttime, sheetEvent.endtime, sheetEvent);
       }
       // Put event ID back into spreadsheet
-      data[ridx][idIdx] = newEvent.getId();
+      idData[ridx][0] = newEvent.getId();
       changesMade = true;
 
       // Updating too many calendar events in a short time interval triggers an error. Still experimenting with
       // the exact values to use here, but this works for updating about 40 events.
-      numUpdates++;
-      if (numUpdates > 10) {
-        Utilities.sleep(50);
+      numAdds++;
+      if (numAdds > 10) {
+        Utilities.sleep(75);
       }
     }
   }
 
   // Save spreadsheet changes
   if (changesMade) {
-    range.setValues(data);
-    range.setFormulas(formulas);
+    idRange.setValues(idData);
   }
 
   // Remove any calendar events not found in the spreadsheet
@@ -284,13 +287,16 @@ function syncToCalendar() {
   }, 0);
   if (numToRemove > 0) {
     var ui = SpreadsheetApp.getUi();
-    var response = ui.alert('Delete ' + numToRemove + ' calendar event(s) not found in spreadsheet?',
-        ui.ButtonSet.YES_NO);
+    var response = ui.Button.YES;
+    if (numToRemove > numUpdated) {
+      response = ui.alert('Delete ' + numToRemove + ' calendar event(s) not found in spreadsheet?',
+          ui.ButtonSet.YES_NO);
+    }
     if (response == ui.Button.YES) {
       calEventIds.forEach(function(id, idx) {
         if (id != null) {
           calEvents[idx].deleteEvent();
-          Utilities.sleep(10);
+          Utilities.sleep(20);
         }
       });
     }
