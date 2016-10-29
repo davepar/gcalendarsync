@@ -7,8 +7,8 @@ goes in the opposite direction, spreadsheet to calendar.
 
 WARNING: Events will be removed! If you're copying to the calendar, any event not found in the
 spreadsheet will be deleted! Likewise copying to the spreadsheet will delete any rows not found
-in the calendar. It's a good idea to try copying into a new spreadsheet tab the first time you
-run it. "Undo" may also save you.
+in the calendar. It's a good idea to try copying into a fresh spreadsheet tab as an experiment
+the first time you run it. "Undo" may also save you.
 
 Recurring events are not currenty supported.
 
@@ -30,7 +30,7 @@ Part 2a. Copy and modify the example spreadsheet:
   [this spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
   (use File -> Make a copy).
 * In the Tools menu, select Script Editor.
-* For the "calendarId" value in the script, paste in the Calendar ID from above.
+* For the "calendarId" value in the script paste in the Calendar ID from Part 1, above.
 * Set the correct time zone in File, Spreadsheet settings.
 * Save the script.
 
@@ -43,7 +43,6 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
     for all-day events. Set the format of this column to "Date time".
   * End Time - end date and time for the event. Ignored for all-day events.  Set the format of this
     column to "Date time".
-  * All Day Event - true/false value.
   * Location - optional event location.
   * Id - used for syncing with calendar. This column could be hidden to prevent accidental edits.
 * In the Tools menu, select Script Editor.

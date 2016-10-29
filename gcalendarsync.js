@@ -58,11 +58,9 @@ function calEventToSheet(calEvent, idxMap, dataRow) {
     'location': calEvent.getLocation()
   };
   if (calEvent.isAllDayEvent()) {
-    convertedEvent.alldayevent = true;
     convertedEvent.starttime = calEvent.getAllDayStartDate();
     convertedEvent.endtime = '';
   } else {
-    convertedEvent.alldayevent = false
     convertedEvent.starttime = calEvent.getStartTime();
     convertedEvent.endtime = calEvent.getEndTime();
   }
@@ -76,17 +74,18 @@ function calEventToSheet(calEvent, idxMap, dataRow) {
 
 // Tests whether calendar event matches spreadsheet event
 function eventMatches(cev, sev) {
+  sevAllDayEvent = (sev.endtime === '');
   return cev.getTitle() == sev.title &&
     cev.getDescription() == sev.description &&
       cev.getStartTime().getTime() == sev.starttime.getTime() &&
-        (!sev.endtime || cev.getEndTime().getTime() == sev.endtime.getTime()) &&
-          cev.isAllDayEvent() == sev.alldayevent &&
+        sevAllDayEvent == cev.isAllDayEvent() &&
+          (sevAllDayEvent || cev.getEndTime().getTime() == sev.endtime.getTime()) &&
             cev.getLocation() == sev.location;
 }
 
 // Determine whether required fields are missing
 function fieldsMissing(idxMap) {
-  return ['id', 'title', 'starttime', 'endtime', 'alldayevent'].some(function(val) {
+  return ['id', 'title', 'starttime', 'endtime'].some(function(val) {
     return idxMap.indexOf(val) < 0;
   });
 }
@@ -228,13 +227,15 @@ function syncToCalendar() {
       errorAlert('start time must be a date/time', sheetEvent, ridx);
       continue;
     }
-    if (!sheetEvent.alldayevent && !(sheetEvent.endtime instanceof Date)) {
-      errorAlert('end time must be a date/time', sheetEvent, ridx);
-      continue;
-    }
-    if (!sheetEvent.alldayevent && sheetEvent.endtime < sheetEvent.starttime) {
-      errorAlert('end time must be after start time for event', sheetEvent, ridx);
-      continue;
+    if (sheetEvent.endtime !== '') {
+      if (!(sheetEvent.endtime instanceof Date)) {
+        errorAlert('end time must be empty or a date/time', sheetEvent, ridx);
+        continue;
+      }
+      if (sheetEvent.endtime < sheetEvent.starttime) {
+        errorAlert('end time must be after start time for event', sheetEvent, ridx);
+        continue;
+      }
     }
 
     // Determine if spreadsheet event is already in calendar and matches
@@ -255,7 +256,7 @@ function syncToCalendar() {
     }
     if (addEvent) {
       var newEvent;
-      if (sheetEvent.alldayevent) {
+      if (sheetEvent.endtime === '') {
         newEvent = calendar.createAllDayEvent(sheetEvent.title, sheetEvent.starttime, sheetEvent);
       } else {
         newEvent = calendar.createEvent(sheetEvent.title, sheetEvent.starttime, sheetEvent.endtime, sheetEvent);
