@@ -54,10 +54,6 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
 
 That's it. Start entering and modifying events. You can add extra columns, and they'll be ignored.
 
-Multi-day all-day events must have one entry for each day. This is a limitation of Calendar. An
-alternative is to create a regular event that spans multiple days, e.g. 3/1/2016 00:00 to
-3/3/2016 23:59.
-
 ## Time zones
 
 There doesn't seem to be a way to enter a time zone for individual events into Google Spreadsheet.

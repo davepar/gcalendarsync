@@ -59,7 +59,7 @@ function calEventToSheet(calEvent, idxMap, dataRow) {
   };
   if (calEvent.isAllDayEvent()) {
     convertedEvent.starttime = calEvent.getAllDayStartDate();
-    convertedEvent.endtime = '';
+    convertedEvent.endtime = calEvent.getAllDayEndDate();
   } else {
     convertedEvent.starttime = calEvent.getStartTime();
     convertedEvent.endtime = calEvent.getEndTime();
@@ -74,12 +74,13 @@ function calEventToSheet(calEvent, idxMap, dataRow) {
 
 // Tests whether calendar event matches spreadsheet event
 function eventMatches(cev, sev) {
-  sevAllDayEvent = (sev.endtime === '');
+  sevAllDayEvent = (sev.starttime.getHours() == 0 && sev.starttime.getMinutes() == 0 &&
+      sev.endtime.getHours() == 0 && sev.endtime.getMinutes() == 0);
   return cev.getTitle() == sev.title &&
     cev.getDescription() == sev.description &&
       cev.getStartTime().getTime() == sev.starttime.getTime() &&
         sevAllDayEvent == cev.isAllDayEvent() &&
-          (sevAllDayEvent || cev.getEndTime().getTime() == sev.endtime.getTime()) &&
+          cev.getEndTime().getTime() == sev.endtime.getTime() &&
             cev.getLocation() == sev.location;
 }
 
