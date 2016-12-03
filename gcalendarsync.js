@@ -5,7 +5,7 @@
 
 // Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
-var calendarId = 'uh88no3mltcq1khp1rau6q6d8k@group.calendar.google.com';
+var calendarId = '<your-calendar-id>@group.calendar.google.com';
 
 var titleRow = ['Title', 'Description', 'Location', 'Start Time', 'End Time', 'All Day Event', 'Id'];
 var fields = titleRow.map(function(entry) {return entry.toLowerCase().replace(/ /g, '');});
