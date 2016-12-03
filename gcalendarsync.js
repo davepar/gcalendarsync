@@ -5,7 +5,7 @@
 
 // Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
-var calendarId = 'YOUR CALENDAR ID HERE';
+var calendarId = 'uh88no3mltcq1khp1rau6q6d8k@group.calendar.google.com';
 
 var titleRow = ['Title', 'Description', 'Location', 'Start Time', 'End Time', 'All Day Event', 'Id'];
 var fields = titleRow.map(function(entry) {return entry.toLowerCase().replace(/ /g, '');});
@@ -49,8 +49,8 @@ function reformatEvent(row, idxMap) {
   }, {});
 }
 
-// Converts calendar event into spreadsheet data row
-function calEventToSheet(calEvent, idxMap, dataRow) {
+// Converts a calendar event to a psuedo-sheet event.
+function convertCalEvent(calEvent) {
   convertedEvent = {
     'id': calEvent.getId(),
     'title': calEvent.getTitle(),
@@ -59,11 +59,25 @@ function calEventToSheet(calEvent, idxMap, dataRow) {
   };
   if (calEvent.isAllDayEvent()) {
     convertedEvent.starttime = calEvent.getAllDayStartDate();
-    convertedEvent.endtime = calEvent.getAllDayEndDate();
+    var endtime = calEvent.getAllDayEndDate();
+    if (endtime - convertedEvent.starttime === 24 * 3600 * 1000) {
+      convertedEvent.endtime = '';
+    } else {
+      convertedEvent.endtime = endtime;
+      if (endtime.getHours() === 0 && endtime.getMinutes() == 0) {
+        convertedEvent.endtime.setSeconds(endtime.getSeconds() - 1);
+      }
+    }
   } else {
     convertedEvent.starttime = calEvent.getStartTime();
     convertedEvent.endtime = calEvent.getEndTime();
   }
+  return convertedEvent;
+}
+
+// Converts calendar event into spreadsheet data row
+function calEventToSheet(calEvent, idxMap, dataRow) {
+  convertedEvent = convertCalEvent(calEvent);
 
   for (var idx = 0; idx < idxMap.length; idx++) {
     if (idxMap[idx] !== null) {
@@ -72,13 +86,19 @@ function calEventToSheet(calEvent, idxMap, dataRow) {
   }
 }
 
+// Returns empty string or time in milliseconds for Date object
+function getEndTime(ev) {
+  return ev.endtime === '' ? '' : ev.endtime.getTime();
+}
+
 // Tests whether calendar event matches spreadsheet event
 function eventMatches(cev, sev) {
-  return cev.getTitle() == sev.title &&
-    cev.getDescription() == sev.description &&
-      cev.getStartTime().getTime() == sev.starttime.getTime() &&
-          cev.getEndTime().getTime() == sev.endtime.getTime() &&
-            cev.getLocation() == sev.location;
+  var convertedCalEvent = convertCalEvent(cev);
+  return convertedCalEvent.title == sev.title &&
+    convertedCalEvent.description == sev.description &&
+      convertedCalEvent.location == sev.location &&
+        convertedCalEvent.starttime == sev.starttime &&
+          getEndTime(convertedCalEvent) === getEndTime(sev);
 }
 
 // Determine whether required fields are missing
@@ -160,7 +180,6 @@ function syncFromCalendar() {
     }
     // Update event in spreadsheet data
     calEventToSheet(calEvent, idxMap, data[ridx]);
-
   }
 
   // Remove any data rows not found in the calendar
@@ -184,6 +203,9 @@ function syncFromCalendar() {
 function syncToCalendar() {
   // Get calendar and events
   var calendar = CalendarApp.getCalendarById(calendarId);
+  if (!calendar) {
+    errorAlert('Cannot find calendar. Check instructions for set up.');
+  }
   var calEvents = calendar.getEvents(new Date('1/1/1970'), new Date('1/1/2030'));
   var calEventIds = calEvents.map(function(val) {return val.getId()});
 

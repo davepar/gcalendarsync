@@ -12,6 +12,10 @@ the first time you run it. "Undo" may also save you.
 
 Recurring events are not currenty supported.
 
+Google Calendar doesn't support multi-day "all day" events in the API. This causes the "all day"
+indicator to disappear when syncing multi-day events to the spreadsheet and back to the calendar.
+Leave the end time blank in the spreadsheet to create an all day event for one day.
+
 ## Set Up
 
 Part 1. Set up the calendar:
@@ -41,8 +45,8 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
   * Description - event description
   * Start Time - start date and time for the event, e.g. "1/27/2016 5:25pm". Should be just a date
     for all-day events. Set the format of this column to "Date time".
-  * End Time - end date and time for the event. Ignored for all-day events.  Set the format of this
-    column to "Date time".
+  * End Time - end date and time for the event. Set to blank for a one day all-day event.  Set the
+    format of this column to "Date time".
   * Location - optional event location.
   * Id - used for syncing with calendar. This column could be hidden to prevent accidental edits.
 * In the Tools menu, select Script Editor.
