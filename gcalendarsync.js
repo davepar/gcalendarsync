@@ -7,8 +7,15 @@
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
 var calendarId = '<your-calendar-id>@group.calendar.google.com';
 
-var titleRow = ['Title', 'Description', 'Location', 'Start Time', 'End Time', 'All Day Event', 'Id'];
-var fields = titleRow.map(function(entry) {return entry.toLowerCase().replace(/ /g, '');});
+var titleRowMap = {
+  'title': 'Title',
+  'description': 'Description',
+  'location': 'Location',
+  'starttime': 'Start Time',
+  'endtime': 'End Time',
+  'id': 'Id'
+};
+var titleRowKeys = ['title', 'description', 'location', 'startime', 'endtime', 'id'];
 
 // Adds the custom menu to the active spreadsheet.
 function onOpen() {
@@ -29,10 +36,15 @@ function onOpen() {
 function createIdxMap(row) {
   var idxMap = [];
   for (var idx = 0; idx < row.length; idx++) {
-    var fieldFromHdr = row[idx].toLowerCase().replace(/ /g, '');
-    if (fields.indexOf(fieldFromHdr) > -1) {
-      idxMap.push(fieldFromHdr);
-    } else {
+    var fieldFromHdr = row[idx];
+    for (var titleKey in titleRowMap) {
+      if (titleRowMap[titleKey] == fieldFromHdr) {
+        idxMap.push(titleKey);
+        break;
+      }
+    }
+    if (idxMap.length <= idx) {
+      // Header field not in map, so add null
       idxMap.push(null);
     }
   }
@@ -109,10 +121,10 @@ function fieldsMissing(idxMap) {
 }
 
 // Set up formats and hide ID column for empty spreadsheet
-function setUpSheet(sheet, fields) {
-  sheet.getRange(1, fields.indexOf('starttime') + 1, 999).setNumberFormat('M/d/yyyy H:mm');
-  sheet.getRange(1, fields.indexOf('endtime') + 1, 999).setNumberFormat('M/d/yyyy H:mm');
-  sheet.hideColumns(fields.indexOf('id') + 1);
+function setUpSheet(sheet, fieldKeys) {
+  sheet.getRange(1, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat('M/d/yyyy H:mm');
+  sheet.getRange(1, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat('M/d/yyyy H:mm');
+  sheet.hideColumns(fieldKeys.indexOf('id') + 1);
 }
 
 // Display error alert
@@ -139,14 +151,18 @@ function syncFromCalendar() {
   var eventFound = new Array(data.length);
 
   // Check if spreadsheet is empty and add a title row
+  var titleRow = [];
+  for (var idx = 0; idx < titleRowKeys.length; idx++) {
+    titleRow.push(titleRowMap[titleRowKeys[idx]]);
+  }
   if (data.length < 1) {
-    data.push(titleRow.slice());
-    setUpSheet(sheet, fields);
+    data.push(titleRow);
+    setUpSheet(sheet, titleRowKeys);
   }
 
   if (data.length == 1 && data[0].length == 1 && data[0][0] === '') {
-    data[0] = titleRow.slice();
-    setUpSheet(sheet, fields);
+    data[0] = titleRow;
+    setUpSheet(sheet, titleRowKeys);
   }
 
   // Map spreadsheet headers to indices

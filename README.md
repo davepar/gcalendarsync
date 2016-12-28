@@ -5,7 +5,7 @@ goes in the opposite direction, spreadsheet to calendar.
 
 ## Limitations
 
-WARNING: Events will be removed! If you're copying to the calendar, any event not found in the
+WARNING: Events may be removed! If you're copying to the calendar, any event not found in the
 spreadsheet will be deleted! Likewise copying to the spreadsheet will delete any rows not found
 in the calendar. It's a good idea to try copying into a fresh spreadsheet tab as an experiment
 the first time you run it. "Undo" may also save you.
@@ -25,9 +25,9 @@ Part 1. Set up the calendar:
 * Open the new calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
 * Copy the "Calendar ID" from the Calendar Address section. It should look like an email address.
 
-You have 2 options at this point. Copy an example spreadsheet, or set up your own. I highly
-recommend the first, because it's known to work. Creating or using your own spreadsheet may
-take some extra fiddling with formats.
+You have 2 options at this point. Copy an example spreadsheet that already has the script set up,
+or use your own spreadsheet and add the script to it. The first option is a little easier. Creating
+or using your own spreadsheet may take some extra work changing display formats.
 
 Part 2a. Copy and modify the example spreadsheet:
 * Make a copy of
@@ -57,6 +57,11 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
 * Save the script.
 
 That's it. Start entering and modifying events. You can add extra columns, and they'll be ignored.
+
+## Custom column names
+
+Custom column names are now supported. In the script, find the "titleRowMap" variable. Change the
+second entry on each line to match your column names.
 
 ## Time zones
 
