@@ -15,7 +15,7 @@ var titleRowMap = {
   'endtime': 'End Time',
   'id': 'Id'
 };
-var titleRowKeys = ['title', 'description', 'location', 'startime', 'endtime', 'id'];
+var titleRowKeys = ['title', 'description', 'location', 'starttime', 'endtime', 'id'];
 
 // Adds the custom menu to the active spreadsheet.
 function onOpen() {
@@ -157,11 +157,15 @@ function syncFromCalendar() {
   }
   if (data.length < 1) {
     data.push(titleRow);
+    range = sheet.getRange(1, 1, data.length, data[0].length);
+    range.setValues(data);
     setUpSheet(sheet, titleRowKeys);
   }
 
   if (data.length == 1 && data[0].length == 1 && data[0][0] === '') {
     data[0] = titleRow;
+    range = sheet.getRange(1, 1, data.length, data[0].length);
+    range.setValues(data);
     setUpSheet(sheet, titleRowKeys);
   }
 
