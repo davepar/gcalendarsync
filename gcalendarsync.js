@@ -18,6 +18,9 @@ var titleRowMap = {
 };
 var titleRowKeys = ['title', 'description', 'location', 'starttime', 'endtime', 'guests', 'id'];
 var requiredFields = ['id', 'title', 'starttime', 'endtime'];
+
+// This controls whether email invites are sent to guests when the event is created in the
+// calendar. Note that any changes to the event will cause email invites to be resent.
 var SEND_EMAIL_INVITES = false;
 
 // Adds the custom menu to the active spreadsheet.
