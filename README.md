@@ -48,6 +48,7 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
   * End Time - end date and time for the event. Set to blank for a one day all-day event.  Set the
     format of this column to "Date time".
   * Location - optional event location.
+  * Guests - optional comma separated list of guest email addresses.
   * Id - used for syncing with calendar. This column could be hidden to prevent accidental edits.
 * In the Tools menu, select Script Editor.
 * Give the project a name.

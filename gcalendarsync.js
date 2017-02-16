@@ -13,9 +13,12 @@ var titleRowMap = {
   'location': 'Location',
   'starttime': 'Start Time',
   'endtime': 'End Time',
+  'guests': 'Guests',
   'id': 'Id'
 };
-var titleRowKeys = ['title', 'description', 'location', 'starttime', 'endtime', 'id'];
+var titleRowKeys = ['title', 'description', 'location', 'starttime', 'endtime', 'guests', 'id'];
+var requiredFields = ['id', 'title', 'starttime', 'endtime'];
+var SEND_EMAIL_INVITES = false;
 
 // Adds the custom menu to the active spreadsheet.
 function onOpen() {
@@ -67,7 +70,8 @@ function convertCalEvent(calEvent) {
     'id': calEvent.getId(),
     'title': calEvent.getTitle(),
     'description': calEvent.getDescription(),
-    'location': calEvent.getLocation()
+    'location': calEvent.getLocation(),
+    'guests': calEvent.getGuestList().map(function(x) {return x.getEmail();}).join(',')
   };
   if (calEvent.isAllDayEvent()) {
     convertedEvent.starttime = calEvent.getAllDayStartDate();
@@ -110,12 +114,13 @@ function eventMatches(cev, sev) {
     convertedCalEvent.description == sev.description &&
       convertedCalEvent.location == sev.location &&
         convertedCalEvent.starttime == sev.starttime &&
-          getEndTime(convertedCalEvent) === getEndTime(sev);
+          getEndTime(convertedCalEvent) === getEndTime(sev) &&
+            convertedCalEvent.guests == sev.guests;
 }
 
 // Determine whether required fields are missing
 function fieldsMissing(idxMap) {
-  return ['id', 'title', 'starttime', 'endtime'].some(function(val) {
+  return requiredFields.some(function(val) {
     return idxMap.indexOf(val) < 0;
   });
 }
@@ -175,7 +180,8 @@ function syncFromCalendar() {
 
   // Verify header has all required fields
   if (fieldsMissing(idxMap)) {
-    errorAlert('Spreadsheet must have Title, Start Time, End Time, All Day Event, and Id columns');
+    var reqFieldNames = requiredFields.map(function(x) {return titleRowMap[x];}).join(', ');
+    errorAlert('Spreadsheet must have ' + reqFieldNames + ' columns');
     return;
   }
 
@@ -247,7 +253,8 @@ function syncToCalendar() {
 
   // Verify header has all required fields
   if (fieldsMissing(idxMap)) {
-    errorAlert('Spreadsheet must have Title, Start Time, End Time, All Day Event, and Id columns');
+    var reqFieldNames = requiredFields.map(function(x) {return titleRowMap[x];}).join(', ');
+    errorAlert('Spreadsheet must have ' + reqFieldNames + ' columns');
     return;
   }
 
@@ -296,6 +303,7 @@ function syncToCalendar() {
     }
     if (addEvent) {
       var newEvent;
+      sheetEvent.sendInvites = SEND_EMAIL_INVITES;
       if (sheetEvent.endtime === '') {
         newEvent = calendar.createAllDayEvent(sheetEvent.title, sheetEvent.starttime, sheetEvent);
       } else {
