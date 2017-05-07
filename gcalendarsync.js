@@ -6,6 +6,8 @@
 // Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
 var calendarId = '<your-calendar-id>@group.calendar.google.com';
+//Configure the year range you want to syncrhonize, e.g.: [2006, 2017]
+var years = [];
 
 var titleRowMap = {
   'title': 'Title',
@@ -149,7 +151,7 @@ function errorAlert(msg, evt, ridx) {
 function syncFromCalendar() {
   // Get calendar and events
   var calendar = CalendarApp.getCalendarById(calendarId);
-  var calEvents = calendar.getEvents(new Date('1/1/1970'), new Date('1/1/2030'));
+  var calEvents = calendar.getEvents(new Date('1/1/' + (config.years ? config.years[0] : '1970')), new Date('31/12/' + (config.years ? config.years[config.years.length - 1] : '2030')));
 
   // Get spreadsheet and data
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -235,7 +237,7 @@ function syncToCalendar() {
   if (!calendar) {
     errorAlert('Cannot find calendar. Check instructions for set up.');
   }
-  var calEvents = calendar.getEvents(new Date('1/1/1970'), new Date('1/1/2030'));
+  var calEvents = calendar.getEvents(new Date('1/1/' + (config.years ? config.years[0] : '1970')), new Date('31/12/' + (config.years ? config.years[config.years.length - 1] : '2030')));
   var calEventIds = calEvents.map(function(val) {return val.getId()});
 
   // Get spreadsheet and data
