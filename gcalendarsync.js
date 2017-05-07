@@ -9,6 +9,8 @@ var calendarId = '<your-calendar-id>@group.calendar.google.com';
 //Configure the year range you want to syncrhonize, e.g.: [2006, 2017]
 var years = [];
 
+var dateFormat = 'M/d/yyyy H:mm';
+
 var titleRowMap = {
   'title': 'Title',
   'description': 'Description',
@@ -132,8 +134,8 @@ function fieldsMissing(idxMap) {
 
 // Set up formats and hide ID column for empty spreadsheet
 function setUpSheet(sheet, fieldKeys) {
-  sheet.getRange(1, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat('M/d/yyyy H:mm');
-  sheet.getRange(1, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat('M/d/yyyy H:mm');
+  sheet.getRange(1, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat(dateFormat);
+  sheet.getRange(1, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat(dateFormat);
   sheet.hideColumns(fieldKeys.indexOf('id') + 1);
 }
 
