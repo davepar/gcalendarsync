@@ -115,10 +115,10 @@ function eventMatches(cev, sev) {
   var convertedCalEvent = convertCalEvent(cev);
   return convertedCalEvent.title == sev.title &&
     convertedCalEvent.description == sev.description &&
-      convertedCalEvent.location == sev.location &&
-        convertedCalEvent.starttime == sev.starttime &&
-          getEndTime(convertedCalEvent) === getEndTime(sev) &&
-            convertedCalEvent.guests == sev.guests;
+    convertedCalEvent.location == sev.location &&
+    convertedCalEvent.starttime.toString() == sev.starttime.toString() &&
+    getEndTime(convertedCalEvent) === getEndTime(sev) &&
+    convertedCalEvent.guests == sev.guests;
 }
 
 // Determine whether required fields are missing
