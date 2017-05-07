@@ -149,6 +149,43 @@ function errorAlert(msg, evt, ridx) {
   }
 }
 
+function updateEvent(calEvent, sheetEvent){
+  sheetEvent.sendInvites = SEND_EMAIL_INVITES;
+  if (sheetEvent.endtime === '') {
+    calEvent.setAllDayDate(sheetEvent.starttime);
+  } else {
+    calEvent.setTime(sheetEvent.starttime, sheetEvent.endtime);
+  }
+  calEvent.setTitle(sheetEvent.title);
+  calEvent.setDescription(sheetEvent.description);
+  calEvent.setLocation(sheetEvent.location);
+  var guestCal = calEvent.getGuestList().map(function (x) {
+    return {
+      email: x.getEmail(),
+      added: false
+    };
+  });
+  var guests = sheetEvent.guests.split(',').map(function (x) {
+    return x ? x.trim() : '';
+  });
+  //check guests that are already invited
+  for (var gIx = 0; gIx < guestCal.length; gIx++) {
+    var index = guests.indexOf(guestCal[gIx].email);
+    if (index >= 0) {
+      guestCal[gIx].added = true;
+      guests.splice(index, 1);
+    }
+  }
+  guests.forEach(function (x) {
+    if (x) calEvent.addGuest(x);
+  });
+  guestCal.forEach(function (x) {
+    if (!x.added) {
+      calEvent.removeGuest(x.email);
+    }
+  });
+}
+
 // Synchronize from calendar to spreadsheet.
 function syncFromCalendar() {
   // Get calendar and events
@@ -300,13 +337,9 @@ function syncToCalendar() {
       if (eventIdx >= 0) {
         calEventIds[eventIdx] = null;  // Prevents removing event below
         var calEvent = calEvents[eventIdx];
-        if (eventMatches(calEvent, sheetEvent)) {
-          addEvent = false;
-        } else {
-          // Delete and re-create event. It's easier than updating in place.
-          calEvent.deleteEvent();
-          numUpdated++;
-        }
+        if (!eventMatches(calEvent, sheetEvent)) {
+          //update the event
+          updateEvent(calEvent, sheetEvent);
       }
     }
     if (addEvent) {
