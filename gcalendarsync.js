@@ -218,7 +218,8 @@ function syncFromCalendar() {
   // Remove any data rows not found in the calendar
   var rowsDeleted = 0;
   for (var idx = eventFound.length - 1; idx > 0; idx--) {
-    if (!eventFound[idx]) {
+    //event doesn't exists and has an event id
+    if (!eventFound[idx] && sheetEventIds[idx - 1]) {
       data.splice(idx, 1);
       rowsDeleted++;
     }
