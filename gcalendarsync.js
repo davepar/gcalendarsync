@@ -190,7 +190,7 @@ function updateEvent(calEvent, sheetEvent){
 function syncFromCalendar() {
   // Get calendar and events
   var calendar = CalendarApp.getCalendarById(calendarId);
-  var calEvents = calendar.getEvents(new Date('1/1/' + (config.years ? config.years[0] : '1970')), new Date('31/12/' + (config.years ? config.years[config.years.length - 1] : '2030')));
+  var calEvents = calendar.getEvents(new Date('1/1/' + (years && years.length ? years[0] : '1970')), new Date('31/12/' + (years && years.length  ? years[years.length - 1] : '2030')));
 
   // Get spreadsheet and data
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -277,8 +277,8 @@ function syncToCalendar() {
   if (!calendar) {
     errorAlert('Cannot find calendar. Check instructions for set up.');
   }
-  var calEvents = calendar.getEvents(new Date('1/1/' + (config.years ? config.years[0] : '1970')), new Date('31/12/' + (config.years ? config.years[config.years.length - 1] : '2030')));
-  var calEventIds = calEvents.map(function(val) {return val.getId()});
+  var calEvents = calendar.getEvents(new Date('1/1/' + (years && years.length  ? years[0] : '1970')), new Date('31/12/' + (years && years.length  ? years[years.length - 1] : '2030')));
+  var calEventIds = calEvents.map(function(val) {return val.getId();});
 
   // Get spreadsheet and data
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -391,4 +391,5 @@ function syncToCalendar() {
       });
     }
   }
+}
 }
