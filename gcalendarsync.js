@@ -149,6 +149,7 @@ function errorAlert(msg, evt, ridx) {
   }
 }
 
+// Updates a calendar event from a sheet event.
 function updateEvent(calEvent, sheetEvent){
   sheetEvent.sendInvites = SEND_EMAIL_INVITES;
   if (sheetEvent.endtime === '') {
@@ -336,10 +337,12 @@ function syncToCalendar() {
       var eventIdx = calEventIds.indexOf(sheetEvent.id);
       if (eventIdx >= 0) {
         calEventIds[eventIdx] = null;  // Prevents removing event below
+        addEvent = false;
         var calEvent = calEvents[eventIdx];
         if (!eventMatches(calEvent, sheetEvent)) {
           //update the event
           updateEvent(calEvent, sheetEvent);
+        }
       }
     }
     if (addEvent) {
@@ -362,6 +365,7 @@ function syncToCalendar() {
       }
     }
   }
+  
 
   // Save spreadsheet changes
   if (changesMade) {
@@ -391,5 +395,4 @@ function syncToCalendar() {
       });
     }
   }
-}
 }
