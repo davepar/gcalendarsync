@@ -6,6 +6,10 @@
 // Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
 var calendarId = '<your-calendar-id>@group.calendar.google.com';
+//Configure the year range you want to syncrhonize, e.g.: [2006, 2017]
+var years = [];
+
+var dateFormat = 'M/d/yyyy H:mm';
 
 var titleRowMap = {
   'title': 'Title',
@@ -115,10 +119,10 @@ function eventMatches(cev, sev) {
   var convertedCalEvent = convertCalEvent(cev);
   return convertedCalEvent.title == sev.title &&
     convertedCalEvent.description == sev.description &&
-      convertedCalEvent.location == sev.location &&
-        convertedCalEvent.starttime == sev.starttime &&
-          getEndTime(convertedCalEvent) === getEndTime(sev) &&
-            convertedCalEvent.guests == sev.guests;
+    convertedCalEvent.location == sev.location &&
+    convertedCalEvent.starttime.toString() == sev.starttime.toString() &&
+    getEndTime(convertedCalEvent) === getEndTime(sev) &&
+    convertedCalEvent.guests == sev.guests;
 }
 
 // Determine whether required fields are missing
@@ -130,8 +134,8 @@ function fieldsMissing(idxMap) {
 
 // Set up formats and hide ID column for empty spreadsheet
 function setUpSheet(sheet, fieldKeys) {
-  sheet.getRange(1, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat('M/d/yyyy H:mm');
-  sheet.getRange(1, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat('M/d/yyyy H:mm');
+  sheet.getRange(1, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat(dateFormat);
+  sheet.getRange(1, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat(dateFormat);
   sheet.hideColumns(fieldKeys.indexOf('id') + 1);
 }
 
@@ -145,11 +149,49 @@ function errorAlert(msg, evt, ridx) {
   }
 }
 
+// Updates a calendar event from a sheet event.
+function updateEvent(calEvent, sheetEvent){
+  sheetEvent.sendInvites = SEND_EMAIL_INVITES;
+  if (sheetEvent.endtime === '') {
+    calEvent.setAllDayDate(sheetEvent.starttime);
+  } else {
+    calEvent.setTime(sheetEvent.starttime, sheetEvent.endtime);
+  }
+  calEvent.setTitle(sheetEvent.title);
+  calEvent.setDescription(sheetEvent.description);
+  calEvent.setLocation(sheetEvent.location);
+  var guestCal = calEvent.getGuestList().map(function (x) {
+    return {
+      email: x.getEmail(),
+      added: false
+    };
+  });
+  var guests = sheetEvent.guests.split(',').map(function (x) {
+    return x ? x.trim() : '';
+  });
+  //check guests that are already invited
+  for (var gIx = 0; gIx < guestCal.length; gIx++) {
+    var index = guests.indexOf(guestCal[gIx].email);
+    if (index >= 0) {
+      guestCal[gIx].added = true;
+      guests.splice(index, 1);
+    }
+  }
+  guests.forEach(function (x) {
+    if (x) calEvent.addGuest(x);
+  });
+  guestCal.forEach(function (x) {
+    if (!x.added) {
+      calEvent.removeGuest(x.email);
+    }
+  });
+}
+
 // Synchronize from calendar to spreadsheet.
 function syncFromCalendar() {
   // Get calendar and events
   var calendar = CalendarApp.getCalendarById(calendarId);
-  var calEvents = calendar.getEvents(new Date('1/1/1970'), new Date('1/1/2030'));
+  var calEvents = calendar.getEvents(new Date('1/1/' + (years && years.length ? years[0] : '1970')), new Date('31/12/' + (years && years.length  ? years[years.length - 1] : '2030')));
 
   // Get spreadsheet and data
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -214,7 +256,8 @@ function syncFromCalendar() {
   // Remove any data rows not found in the calendar
   var rowsDeleted = 0;
   for (var idx = eventFound.length - 1; idx > 0; idx--) {
-    if (!eventFound[idx]) {
+    //event doesn't exists and has an event id
+    if (!eventFound[idx] && sheetEventIds[idx - 1]) {
       data.splice(idx, 1);
       rowsDeleted++;
     }
@@ -235,8 +278,8 @@ function syncToCalendar() {
   if (!calendar) {
     errorAlert('Cannot find calendar. Check instructions for set up.');
   }
-  var calEvents = calendar.getEvents(new Date('1/1/1970'), new Date('1/1/2030'));
-  var calEventIds = calEvents.map(function(val) {return val.getId()});
+  var calEvents = calendar.getEvents(new Date('1/1/' + (years && years.length  ? years[0] : '1970')), new Date('31/12/' + (years && years.length  ? years[years.length - 1] : '2030')));
+  var calEventIds = calEvents.map(function(val) {return val.getId();});
 
   // Get spreadsheet and data
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -294,13 +337,11 @@ function syncToCalendar() {
       var eventIdx = calEventIds.indexOf(sheetEvent.id);
       if (eventIdx >= 0) {
         calEventIds[eventIdx] = null;  // Prevents removing event below
+        addEvent = false;
         var calEvent = calEvents[eventIdx];
-        if (eventMatches(calEvent, sheetEvent)) {
-          addEvent = false;
-        } else {
-          // Delete and re-create event. It's easier than updating in place.
-          calEvent.deleteEvent();
-          numUpdated++;
+        if (!eventMatches(calEvent, sheetEvent)) {
+          //update the event
+          updateEvent(calEvent, sheetEvent);
         }
       }
     }
@@ -324,6 +365,7 @@ function syncToCalendar() {
       }
     }
   }
+  
 
   // Save spreadsheet changes
   if (changesMade) {
