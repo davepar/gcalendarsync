@@ -59,6 +59,12 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
 
 That's it. Start entering and modifying events. You can add extra columns, and they'll be ignored.
 
+## Configuratino options
+
+There are two variables near the top of the script that can be modified:
+* years - Set a range of years to synchronize. Defaults to 1970 to 2030.
+* dateFormat - The date/time format to use when setting up the spreadsheet.
+
 ## Custom column names
 
 Custom column names are now supported. In the script, find the "titleRowMap" variable. Change the

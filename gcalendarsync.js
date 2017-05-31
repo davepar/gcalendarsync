@@ -6,9 +6,11 @@
 // Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
 var calendarId = '<your-calendar-id>@group.calendar.google.com';
-//Configure the year range you want to syncrhonize, e.g.: [2006, 2017]
+
+// Configure the year range you want to synchronize, e.g.: [2006, 2017]
 var years = [];
 
+// Date format to use in the spreadsheet.
 var dateFormat = 'M/d/yyyy H:mm';
 
 var titleRowMap = {
@@ -169,7 +171,7 @@ function updateEvent(calEvent, sheetEvent){
   var guests = sheetEvent.guests.split(',').map(function (x) {
     return x ? x.trim() : '';
   });
-  //check guests that are already invited
+  // Check guests that are already invited.
   for (var gIx = 0; gIx < guestCal.length; gIx++) {
     var index = guests.indexOf(guestCal[gIx].email);
     if (index >= 0) {
@@ -365,7 +367,6 @@ function syncToCalendar() {
       }
     }
   }
-  
 
   // Save spreadsheet changes
   if (changesMade) {
