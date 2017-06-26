@@ -162,14 +162,14 @@ function updateEvent(calEvent, sheetEvent){
   calEvent.setTitle(sheetEvent.title);
   calEvent.setDescription(sheetEvent.description);
   calEvent.setLocation(sheetEvent.location);
-  var sheetGuests = sheetEvent.guests || '';
-  var guests = sheetGuests.split(',').map(function (x) {
+  var guestCal = calEvent.getGuestList().map(function (x) {
     return {
       email: x.getEmail(),
       added: false
     };
   });
-  var guests = sheetEvent.guests.split(',').map(function (x) {
+  var sheetGuests = sheetEvent.guests || '';
+  var guests = sheetGuests.split(',').map(function (x) {
     return x ? x.trim() : '';
   });
   // Check guests that are already invited.
