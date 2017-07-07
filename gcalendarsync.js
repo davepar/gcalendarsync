@@ -29,6 +29,10 @@ var requiredFields = ['id', 'title', 'starttime', 'endtime'];
 // calendar. Note that any changes to the event will cause email invites to be resent.
 var SEND_EMAIL_INVITES = false;
 
+// Setting this to true will silently skip rows that have a blank start and end time
+// instead of popping up an error dialog.
+var SKIP_BLANK_ROWS = false;
+
 // Adds the custom menu to the active spreadsheet.
 function onOpen() {
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -313,6 +317,12 @@ function syncToCalendar() {
   var changesMade = false;
   for (var ridx = 1; ridx < data.length; ridx++) {
     var sheetEvent = reformatEvent(data[ridx], idxMap);
+
+    // If enabled, skip rows with blank/invalid start and end times
+    if (SKIP_BLANK_ROWS && !(sheetEvent.starttime instanceof Date) &&
+        !(sheetEvent.endtime instanceof Date)) {
+      continue;
+    }
 
     // Do some error checking first
     if (!sheetEvent.title) {
