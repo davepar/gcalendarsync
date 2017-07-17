@@ -33,6 +33,11 @@ var SEND_EMAIL_INVITES = false;
 // instead of popping up an error dialog.
 var SKIP_BLANK_ROWS = false;
 
+// Updating too many events in a short time period triggers an error. These values
+// were tested for updating 40 events. Modify these values if you're still seeing errors.
+var THROTTLE_THRESHOLD = 10;
+var THROTTLE_SLEEP_TIME = 75;
+
 // Adds the custom menu to the active spreadsheet.
 function onOpen() {
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -68,13 +73,17 @@ function createIdxMap(row) {
 }
 
 // Converts a spreadsheet row into an object containing event-related fields
-function reformatEvent(row, idxMap) {
-  return row.reduce(function(event, value, idx) {
+function reformatEvent(row, idxMap, keysToAdd) {
+  var reformatted = row.reduce(function(event, value, idx) {
     if (idxMap[idx] != null) {
       event[idxMap[idx]] = value;
     }
     return event;
   }, {});
+  for (var k in keysToAdd) {
+    reformatted[keysToAdd[k]] = '';
+  }
+  return reformatted;
 }
 
 // Converts a calendar event to a psuedo-sheet event.
@@ -132,8 +141,15 @@ function eventMatches(cev, sev) {
 }
 
 // Determine whether required fields are missing
-function fieldsMissing(idxMap) {
+function areRequiredFieldsMissing(idxMap) {
   return requiredFields.some(function(val) {
+    return idxMap.indexOf(val) < 0;
+  });
+}
+
+// Returns list of fields that aren't in spreadsheet
+function missingFields(idxMap) {
+  return titleRowKeys.filter(function(val) {
     return idxMap.indexOf(val) < 0;
   });
 }
@@ -231,7 +247,7 @@ function syncFromCalendar() {
   var idIdx = idxMap.indexOf('id');
 
   // Verify header has all required fields
-  if (fieldsMissing(idxMap)) {
+  if (areRequiredFieldsMissing(idxMap)) {
     var reqFieldNames = requiredFields.map(function(x) {return titleRowMap[x];}).join(', ');
     errorAlert('Spreadsheet must have ' + reqFieldNames + ' columns');
     return;
@@ -305,18 +321,20 @@ function syncToCalendar() {
   var idData = idRange.getValues()
 
   // Verify header has all required fields
-  if (fieldsMissing(idxMap)) {
+  if (areRequiredFieldsMissing(idxMap)) {
     var reqFieldNames = requiredFields.map(function(x) {return titleRowMap[x];}).join(', ');
     errorAlert('Spreadsheet must have ' + reqFieldNames + ' columns');
     return;
   }
 
+  var keysToAdd = missingFields(idxMap);
+
   // Loop through spreadsheet rows
-  var numAdds = 0;
+  var numChanges = 0;
   var numUpdated = 0;
   var changesMade = false;
   for (var ridx = 1; ridx < data.length; ridx++) {
-    var sheetEvent = reformatEvent(data[ridx], idxMap);
+    var sheetEvent = reformatEvent(data[ridx], idxMap, keysToAdd);
 
     // If enabled, skip rows with blank/invalid start and end times
     if (SKIP_BLANK_ROWS && !(sheetEvent.starttime instanceof Date) &&
@@ -353,8 +371,14 @@ function syncToCalendar() {
         addEvent = false;
         var calEvent = calEvents[eventIdx];
         if (!eventMatches(calEvent, sheetEvent)) {
-          //update the event
+          // Update the event
           updateEvent(calEvent, sheetEvent);
+
+          // Maybe throttle updates.
+          numChanges++;
+          if (numChanges > THROTTLE_THRESHOLD) {
+            Utilities.sleep(THROTTLE_SLEEP_TIME);
+          }
         }
       }
     }
@@ -370,11 +394,10 @@ function syncToCalendar() {
       idData[ridx][0] = newEvent.getId();
       changesMade = true;
 
-      // Updating too many calendar events in a short time interval triggers an error. Still experimenting with
-      // the exact values to use here, but this works for updating about 40 events.
-      numAdds++;
-      if (numAdds > 10) {
-        Utilities.sleep(75);
+      // Maybe throttle updates.
+      numChanges++;
+      if (numChanges > THROTTLE_THRESHOLD) {
+        Utilities.sleep(THROTTLE_SLEEP_TIME);
       }
     }
   }
@@ -407,4 +430,5 @@ function syncToCalendar() {
       });
     }
   }
+  Logger.log('Updated %s calendar events', numChanges);
 }

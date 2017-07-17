@@ -42,13 +42,13 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
 * Create or open a Google Spreadsheet at http://drive.google.com.
 * Create columns with these names (can be in any order):
   * Title - event title
-  * Description - event description
+  * Description - event description (optional)
   * Start Time - start date and time for the event, e.g. "1/27/2016 5:25pm". Should be just a date
     for all-day events. Set the format of this column to "Date time".
   * End Time - end date and time for the event. Set to blank for a one day all-day event.  Set the
     format of this column to "Date time".
-  * Location - optional event location.
-  * Guests - optional comma separated list of guest email addresses.
+  * Location - event location. (optional)
+  * Guests - comma separated list of guest email addresses. (optional)
   * Id - used for syncing with calendar. This column could be hidden to prevent accidental edits.
 * In the Tools menu, select Script Editor.
 * Give the project a name.
@@ -68,7 +68,8 @@ There are two variables near the top of the script that can be modified:
 ## Custom column names
 
 Custom column names are now supported. In the script, find the "titleRowMap" variable. Change the
-second entry on each line to match your column names.
+second entry on each line to match your column names. If you're not using one of the
+optional fields, just leave it in titleRowMap.
 
 ## Time zones
 
