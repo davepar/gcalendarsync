@@ -90,7 +90,7 @@ direction you want to sync. The first
 time you run it, a dialog will pop up asking for authorization to manage the calendar and spreadsheet.
 Depending on the number of changes, the script runs in a few seconds to a few minutes.
 
-## Automatically sycning
+## Automatically syncing
 
 You can also set up the script to automatically update a calendar whenever the sheet is
 updated. This is really handy if your sheet is associated with a form for letting people
