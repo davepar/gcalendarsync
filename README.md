@@ -3,6 +3,11 @@ Apps Script for syncing a Google Spreadsheet with Google Calendar. Two commands 
 "Calendar Sync" menu. One copies events from a calendar into a spreadsheet. The other commands
 goes in the opposite direction, spreadsheet to calendar.
 
+I started this project for creating and updating a quarterly calendar for my swimming group.
+It's much easier to type a work out schedule into a spreadsheet than Google Calendar. I'm no
+longer actively using the script, but happy to work on bugs of features occasionally. Also
+feel free to make fixes yourself and send me pull requests. (Oct 2017)
+
 ## Limitations
 
 WARNING: Events may be removed! If you're copying to the calendar, any event not found in the
@@ -84,6 +89,25 @@ for a "Calendar Sync" menu. Choose "Update from Calendar" or "Update to Calendar
 direction you want to sync. The first
 time you run it, a dialog will pop up asking for authorization to manage the calendar and spreadsheet.
 Depending on the number of changes, the script runs in a few seconds to a few minutes.
+
+## Automatically sycning
+
+You can also set up the script to automatically update a calendar whenever the sheet is
+updated. This is really handy if your sheet is associated with a form for letting people
+add events.
+
+Use the Run -> Run function menu to execute the "createSpreadsheetEditTrigger" function
+one time. You will need to approve some special permissions. A popup dialog will say
+"This app isn't verified". This is because the spreadsheet will be modified the calendar
+even when you aren't logged in. You can get around this by clicking "Advanced" in the
+dialog and then clicking on your spreadsheet name. Approve the permissions in the next
+dialog. You can modify the trigger by reading the
+[documentation](https://developers.google.com/apps-script/guides/triggers/events).
+
+To remove the trigger, use the same menu command to run the deleteTrigger function.
+
+IMPORTANT: Be careful who has permissions to edit the spreadsheet and script. Once you
+set up the trigger to run, someone else could modify the script maliciously.
 
 ## Troubleshooting
 

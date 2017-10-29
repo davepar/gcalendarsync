@@ -432,3 +432,24 @@ function syncToCalendar() {
   }
   Logger.log('Updated %s calendar events', numChanges);
 }
+
+// Set up a trigger to automatically update the calendar when the spreadsheet is
+// modified. See the instructions for how to use this.
+function createSpreadsheetEditTrigger() {
+  var ss = SpreadsheetApp.getActive();
+  ScriptApp.newTrigger('syncToCalendar')
+      .forSpreadsheet(ss)
+      .onEdit()
+      .create();
+}
+
+// Delete the trigger. Use this to stop automatically updating the calendar.
+function deleteTrigger() {
+  // Loop over all triggers.
+  var allTriggers = ScriptApp.getProjectTriggers();
+  for (var idx = 0; idx < allTriggers.length; idx++) {
+    if (allTriggers[idx].getHandlerFunction() === 'syncToCalendar') {
+      ScriptApp.deleteTrigger(allTriggers[idx]);
+    }
+  }
+}
