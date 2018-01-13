@@ -5,7 +5,8 @@
 
 // Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
-var calendarId = '<your-calendar-id>@group.calendar.google.com';
+//var calendarId = '<your-calendar-id>@group.calendar.google.com';
+var calendarId = '3icu4ffi1iuh935ep5ffubgo3s@group.calendar.google.com';
 
 // Configure the year range you want to synchronize, e.g.: [2006, 2017]
 var years = [];
@@ -20,9 +21,10 @@ var titleRowMap = {
   'starttime': 'Start Time',
   'endtime': 'End Time',
   'guests': 'Guests',
+  'color': 'Color',
   'id': 'Id'
 };
-var titleRowKeys = ['title', 'description', 'location', 'starttime', 'endtime', 'guests', 'id'];
+var titleRowKeys = ['title', 'description', 'location', 'starttime', 'endtime', 'guests', 'color', 'id'];
 var requiredFields = ['id', 'title', 'starttime', 'endtime'];
 
 // This controls whether email invites are sent to guests when the event is created in the
@@ -93,7 +95,8 @@ function convertCalEvent(calEvent) {
     'title': calEvent.getTitle(),
     'description': calEvent.getDescription(),
     'location': calEvent.getLocation(),
-    'guests': calEvent.getGuestList().map(function(x) {return x.getEmail();}).join(',')
+    'guests': calEvent.getGuestList().map(function(x) {return x.getEmail();}).join(','),
+    'color': calEvent.getColor()
   };
   if (calEvent.isAllDayEvent()) {
     convertedEvent.starttime = calEvent.getAllDayStartDate();
@@ -137,7 +140,8 @@ function eventMatches(cev, sev) {
     convertedCalEvent.location == sev.location &&
     convertedCalEvent.starttime.toString() == sev.starttime.toString() &&
     getEndTime(convertedCalEvent) === getEndTime(sev) &&
-    convertedCalEvent.guests == sev.guests;
+    convertedCalEvent.guests == sev.guests &&
+    convertedCalEvent.color == ('' + sev.color);
 }
 
 // Determine whether required fields are missing
@@ -182,6 +186,10 @@ function updateEvent(calEvent, sheetEvent){
   calEvent.setTitle(sheetEvent.title);
   calEvent.setDescription(sheetEvent.description);
   calEvent.setLocation(sheetEvent.location);
+  // Set event color
+  if (sheetEvent.color > 0 && sheetEvent.color < 12) {
+    calEvent.setColor('' + sheetEvent.color);
+  }
   var guestCal = calEvent.getGuestList().map(function (x) {
     return {
       email: x.getEmail(),
@@ -393,6 +401,11 @@ function syncToCalendar() {
       // Put event ID back into spreadsheet
       idData[ridx][0] = newEvent.getId();
       changesMade = true;
+
+      // Set event color
+      if (sheetEvent.color > 0 && sheetEvent.color < 12) {
+        newEvent.setColor('' + sheetEvent.color);
+      }
 
       // Maybe throttle updates.
       numChanges++;

@@ -5,7 +5,7 @@ goes in the opposite direction, spreadsheet to calendar.
 
 I started this project for creating and updating a quarterly calendar for my swimming group.
 It's much easier to type a work out schedule into a spreadsheet than Google Calendar. I'm no
-longer actively using the script, but happy to work on bugs of features occasionally. Also
+longer actively using the script, but happy to work on bugs or features occasionally. Also
 feel free to make fixes yourself and send me pull requests. (Oct 2017)
 
 ## Limitations
@@ -54,6 +54,9 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
     format of this column to "Date time".
   * Location - event location. (optional)
   * Guests - comma separated list of guest email addresses. (optional)
+  * Color - a number from 1 to 11 that represents a color to set on the event. See the
+    [list of colors](https://developers.google.com/apps-script/reference/calendar/event-color).
+    (optional)
   * Id - used for syncing with calendar. This column could be hidden to prevent accidental edits.
 * In the Tools menu, select Script Editor.
 * Give the project a name.
