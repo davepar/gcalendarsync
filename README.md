@@ -27,8 +27,9 @@ Part 1. Set up the calendar:
 * Create a new Google Calendar (in the dropdown next to "My calendars" in the left sidebar
   of Calendar).
 * Give the calendar a name and change other fields as desired, i.e. set up sharing.
-* Open the new calendar's settings ("Calendar settings" in the dropdown next to the calendar name).
-* Copy the "Calendar ID" from the Calendar Address section. It should look like an email address.
+* Open the new calendar's settings ("Settings and sharing" in the dropdown next to the calendar name).
+* Scroll down to the "Integrate calendar" section. Copy the "Calendar ID". It should look like an
+  email address.
 
 You have 2 options at this point. Copy an example spreadsheet that already has the script set up,
 or use your own spreadsheet and add the script to it. The first option is a little easier. Creating
@@ -39,7 +40,8 @@ Part 2a. Copy and modify the example spreadsheet:
   [this spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
   (use File -> Make a copy).
 * In the Tools menu, select Script Editor.
-* For the "calendarId" value in the script paste in the Calendar ID from Part 1, above.
+* Replace the "calendarId" value near the beginning of the script with the Calendar ID from Part 1,
+  above.
 * Set the correct time zone in File, Spreadsheet settings.
 * Save the script.
 
