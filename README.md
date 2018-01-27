@@ -32,8 +32,8 @@ Part 1. Set up the calendar:
   email address.
 
 You have 2 options at this point. Copy an example spreadsheet that already has the script set up,
-or use your own spreadsheet and add the script to it. The first option is a little easier. Creating
-or using your own spreadsheet may take some extra work changing display formats.
+or use your own spreadsheet and add the script to it. The first option is a little easier. Using
+your own spreadsheet will just take a little extra work to set up the column headers correctly.
 
 Part 2a. Copy and modify the example spreadsheet:
 * Make a copy of
@@ -68,6 +68,7 @@ Part 2b. If instead you want to create a new spreadsheet from scratch, or use on
 * Save the script.
 
 That's it. Start entering and modifying events. You can add extra columns, and they'll be ignored.
+See the "How to Sync" section below for how to run the script.
 
 ## Configuration options
 
@@ -91,19 +92,24 @@ Spreadsheet settings ([more info](https://support.google.com/docs/answer/58515?h
 
 In the spreadsheet, select the desired sheet (tabs at the bottom of the spreadsheet) and then look
 for a "Calendar Sync" menu. Choose "Update from Calendar" or "Update to Calendar" depending on the
-direction you want to sync. The first
-time you run it, a dialog will pop up asking for authorization to manage the calendar and spreadsheet.
+direction you want to sync. The first time you do this, an "Authorization Required" dialog will pop
+up. Click "Continue" and select your account in the next dialog. Then a somewhat scary dialog
+will appear. Google is trying to protect against some malicious Apps scripts that were floating
+around. I haven't jumped through the steps yet to become a trusted developer. By publishing the
+source for this script, everybody can verify for themselves that it isn't doing anything nefarious.
+If you trust that, click on "Advanced" and then the link at the bottom ending in "unsafe". Finally,
+click "Allow" in the next dialog.
+
 Depending on the number of changes, the script runs in a few seconds to a few minutes.
 
 ## Automatically syncing
 
 You can also set up the script to automatically update a calendar whenever the sheet is
-updated. This is really handy if your sheet is associated with a form for letting people
-add events.
+updated. This is really handy if your sheet is associated with a form for adding events.
 
 Use the Run -> Run function menu to execute the "createSpreadsheetEditTrigger" function
 one time. You will need to approve some special permissions. A popup dialog will say
-"This app isn't verified". This is because the spreadsheet will be modified the calendar
+"This app isn't verified". This is because the spreadsheet will be modifying the calendar
 even when you aren't logged in. You can get around this by clicking "Advanced" in the
 dialog and then clicking on your spreadsheet name. Approve the permissions in the next
 dialog. You can modify the trigger by reading the
