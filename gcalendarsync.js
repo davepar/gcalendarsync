@@ -5,8 +5,7 @@
 
 // Set this value to match your calendar!!!
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
-//var calendarId = '<your-calendar-id>@group.calendar.google.com';
-var calendarId = '3icu4ffi1iuh935ep5ffubgo3s@group.calendar.google.com';
+var calendarId = '<your-calendar-id>@group.calendar.google.com';
 
 // Configure the year range you want to synchronize, e.g.: [2006, 2017]
 var years = [];
