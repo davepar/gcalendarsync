@@ -72,8 +72,12 @@ See the "How to Sync" section below for how to run the script.
 
 ## Configuration options
 
-There are two variables near the top of the script that can be modified:
-* years - Set a range of years to synchronize. Defaults to 1970 to 2030.
+There are three variables near the top of the script that can be modified:
+* beginDate/endDate - Set these to sync up a smaller range of dates. The numbers are year, month,
+  date, where month is 0 for Jan through 11 for Dec. beginDate can also be set to today's date to
+  ignore everything in the past: `var beginDate = new Date()`. When syncing from calendar to sheet,
+  any rows outside the range will be removed. Syncing from sheet to calendar simply ignores any
+  events outside the range.
 * dateFormat - The date/time format to use when setting up the spreadsheet.
 
 ## Custom column names

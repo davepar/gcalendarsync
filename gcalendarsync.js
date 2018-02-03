@@ -7,8 +7,10 @@
 // Calendar ID can be found in the "Calendar Address" section of the Calendar Settings.
 var calendarId = '<your-calendar-id>@group.calendar.google.com';
 
-// Configure the year range you want to synchronize, e.g.: [2006, 2017]
-var years = [];
+// Set the beginning and end dates that should be synced. beginDate can be set to Date() to use
+// today. The numbers are year, month, date, where month is 0 for Jan through 11 for Dec.
+var beginDate = new Date(1970, 0, 1);  // Default to Jan 1, 1970
+var endDate = new Date(2500, 0, 1);  // Default to Jan 1, 2500
 
 // Date format to use in the spreadsheet.
 var dateFormat = 'M/d/yyyy H:mm';
@@ -221,7 +223,7 @@ function updateEvent(calEvent, sheetEvent){
 function syncFromCalendar() {
   // Get calendar and events
   var calendar = CalendarApp.getCalendarById(calendarId);
-  var calEvents = calendar.getEvents(new Date('1/1/' + (years && years.length ? years[0] : '1970')), new Date('31/12/' + (years && years.length  ? years[years.length - 1] : '2030')));
+  var calEvents = calendar.getEvents(beginDate, endDate);
 
   // Get spreadsheet and data
   var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -308,7 +310,7 @@ function syncToCalendar() {
   if (!calendar) {
     errorAlert('Cannot find calendar. Check instructions for set up.');
   }
-  var calEvents = calendar.getEvents(new Date('1/1/' + (years && years.length  ? years[0] : '1970')), new Date('31/12/' + (years && years.length  ? years[years.length - 1] : '2030')));
+  var calEvents = calendar.getEvents(beginDate, endDate);
   var calEventIds = calEvents.map(function(val) {return val.getId();});
 
   // Get spreadsheet and data
@@ -365,6 +367,20 @@ function syncToCalendar() {
       }
       if (sheetEvent.endtime < sheetEvent.starttime) {
         errorAlert('end time must be after start time for event', sheetEvent, ridx);
+        continue;
+      }
+    }
+
+    // Ignore events outside of the begin/end range desired.
+    if (sheetEvent.starttime > endDate) {
+      continue;
+    }
+    if (sheetEvent.endtime === '') {
+      if (sheetEvent.starttime < beginDate) {
+        continue;
+      }
+    } else {
+      if (sheetEvent.endtime < beginDate) {
         continue;
       }
     }
