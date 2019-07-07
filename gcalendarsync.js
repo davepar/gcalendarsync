@@ -37,9 +37,12 @@ var SEND_EMAIL_INVITES = false;
 var SKIP_BLANK_ROWS = false;
 
 // Updating too many events in a short time period triggers an error. These values
-// were tested for updating 40 events. Modify these values if you're still seeing errors.
-var THROTTLE_THRESHOLD = 10;
-var THROTTLE_SLEEP_TIME = 75;
+// were successfully used for deleting and adding 240 events. Values in milliseconds.
+var THROTTLE_SLEEP_TIME = 200;
+var MAX_RUN_TIME = 5.75 * 60 * 1000;
+
+// Special flag value. Don't change.
+var EVENT_DIFFS_WITH_GUESTS = 999;
 
 // Adds the custom menu to the active spreadsheet.
 function onOpen() {
@@ -133,16 +136,21 @@ function getEndTime(ev) {
   return ev.endtime === '' ? '' : ev.endtime.getTime();
 }
 
-// Tests whether calendar event matches spreadsheet event
-function eventMatches(cev, sev) {
-  var convertedCalEvent = convertCalEvent(cev);
-  return convertedCalEvent.title == sev.title &&
-    convertedCalEvent.description == sev.description &&
-    convertedCalEvent.location == sev.location &&
-    convertedCalEvent.starttime.toString() == sev.starttime.toString() &&
-    getEndTime(convertedCalEvent) === getEndTime(sev) &&
-    convertedCalEvent.guests == sev.guests &&
-    convertedCalEvent.color == ('' + sev.color);
+// Determines the number of field differences between a calendar event and
+// a spreadsheet event
+function eventDifferences(convertedCalEvent, sev) {
+  var eventDiffs = 0 + (convertedCalEvent.title !== sev.title) +
+    (convertedCalEvent.description !== sev.description) +
+    (convertedCalEvent.location !== sev.location) +
+    (convertedCalEvent.starttime.toString() !== sev.starttime.toString()) +
+    (getEndTime(convertedCalEvent) !== getEndTime(sev)) +
+    (convertedCalEvent.guests !== sev.guests) +
+    (convertedCalEvent.color !== ('' + sev.color));
+  if (eventDiffs > 0 && convertedCalEvent.guests) {
+    // Use a special flag value if an event changed, but it has guests.
+    eventDiffs = EVENT_DIFFS_WITH_GUESTS;
+  }
+  return eventDiffs;
 }
 
 // Determine whether required fields are missing
@@ -177,50 +185,76 @@ function errorAlert(msg, evt, ridx) {
 }
 
 // Updates a calendar event from a sheet event.
-function updateEvent(calEvent, sheetEvent){
+function updateEvent(calEvent, convertedCalEvent, sheetEvent){
+  var numChanges = 0;
   sheetEvent.sendInvites = SEND_EMAIL_INVITES;
-  if (sheetEvent.endtime === '') {
-    calEvent.setAllDayDate(sheetEvent.starttime);
-  } else {
-    calEvent.setTime(sheetEvent.starttime, sheetEvent.endtime);
+  if (convertedCalEvent.starttime.toString() !== sheetEvent.starttime.toString() ||
+      getEndTime(convertedCalEvent) !== getEndTime(sheetEvent)) {
+    if (sheetEvent.endtime === '') {
+      calEvent.setAllDayDate(sheetEvent.starttime);
+    } else {
+      calEvent.setTime(sheetEvent.starttime, sheetEvent.endtime);
+    }
+    numChanges++;
   }
-  calEvent.setTitle(sheetEvent.title);
-  calEvent.setDescription(sheetEvent.description);
-  calEvent.setLocation(sheetEvent.location);
-  // Set event color
-  if (sheetEvent.color > 0 && sheetEvent.color < 12) {
-    calEvent.setColor('' + sheetEvent.color);
+  if (convertedCalEvent.title !== sheetEvent.title) {
+    calEvent.setTitle(sheetEvent.title);
+    numChanges++;
   }
-  var guestCal = calEvent.getGuestList().map(function (x) {
-    return {
-      email: x.getEmail(),
-      added: false
-    };
-  });
-  var sheetGuests = sheetEvent.guests || '';
-  var guests = sheetGuests.split(',').map(function (x) {
-    return x ? x.trim() : '';
-  });
-  // Check guests that are already invited.
-  for (var gIx = 0; gIx < guestCal.length; gIx++) {
-    var index = guests.indexOf(guestCal[gIx].email);
-    if (index >= 0) {
-      guestCal[gIx].added = true;
-      guests.splice(index, 1);
+  if (convertedCalEvent.description !== sheetEvent.description) {
+    calEvent.setDescription(sheetEvent.description);
+    numChanges++;
+  }
+  if (convertedCalEvent.location !== sheetEvent.location) {
+    calEvent.setLocation(sheetEvent.location);
+    numChanges++;
+  }
+  if (convertedCalEvent.color !== ('' + sheetEvent.color)) {
+    if (sheetEvent.color > 0 && sheetEvent.color < 12) {
+      calEvent.setColor('' + sheetEvent.color);
+      numChanges++;
     }
   }
-  guests.forEach(function (x) {
-    if (x) calEvent.addGuest(x);
-  });
-  guestCal.forEach(function (x) {
-    if (!x.added) {
-      calEvent.removeGuest(x.email);
+  if (convertedCalEvent.guests !== sheetEvent.guests) {
+    var guestCal = calEvent.getGuestList().map(function (x) {
+      return {
+        email: x.getEmail(),
+        added: false
+      };
+    });
+    var sheetGuests = sheetEvent.guests || '';
+    var guests = sheetGuests.split(',').map(function (x) {
+      return x ? x.trim() : '';
+    });
+    // Check guests that are already invited.
+    for (var gIx = 0; gIx < guestCal.length; gIx++) {
+      var index = guests.indexOf(guestCal[gIx].email);
+      if (index >= 0) {
+        guestCal[gIx].added = true;
+        guests.splice(index, 1);
+      }
     }
-  });
+    guests.forEach(function (guest) {
+      if (guest) {
+        calEvent.addGuest(guest);
+        numChanges++;
+      }
+    });
+    guestCal.forEach(function (guest) {
+      if (!guest.added) {
+        calEvent.removeGuest(guest.email);
+        numChanges++;
+      }
+    });
+  }
+  // Throttle updates.
+  Utilities.sleep(THROTTLE_SLEEP_TIME * numChanges);
+  return numChanges;
 }
 
 // Synchronize from calendar to spreadsheet.
 function syncFromCalendar() {
+  console.info('Starting sync from calendar');
   // Get calendar and events
   var calendar = CalendarApp.getCalendarById(calendarId);
   var calEvents = calendar.getEvents(beginDate, endDate);
@@ -305,6 +339,8 @@ function syncFromCalendar() {
 
 // Synchronize from spreadsheet to calendar.
 function syncToCalendar() {
+  console.info('Starting sync to calendar');
+  var scriptStart = Date.now();
   // Get calendar and events
   var calendar = CalendarApp.getCalendarById(calendarId);
   if (!calendar) {
@@ -339,9 +375,9 @@ function syncToCalendar() {
   var keysToAdd = missingFields(idxMap);
 
   // Loop through spreadsheet rows
-  var numChanges = 0;
-  var numUpdated = 0;
-  var changesMade = false;
+  var numAdded = 0;
+  var numUpdates = 0;
+  var eventsAdded = false;
   for (var ridx = 1; ridx < data.length; ridx++) {
     var sheetEvent = reformatEvent(data[ridx], idxMap, keysToAdd);
 
@@ -393,18 +429,25 @@ function syncToCalendar() {
         calEventIds[eventIdx] = null;  // Prevents removing event below
         addEvent = false;
         var calEvent = calEvents[eventIdx];
-        if (!eventMatches(calEvent, sheetEvent)) {
-          // Update the event
-          updateEvent(calEvent, sheetEvent);
-
-          // Maybe throttle updates.
-          numChanges++;
-          if (numChanges > THROTTLE_THRESHOLD) {
-            Utilities.sleep(THROTTLE_SLEEP_TIME);
+        var convertedCalEvent = convertCalEvent(calEvent);
+        var eventDiffs = eventDifferences(convertedCalEvent, sheetEvent);
+        if (eventDiffs > 0) {
+          // When there are only 1 or 2 event differences, it's quicker to
+          // update the event. For more event diffs, delete and re-add the event. The one
+          // exception is if the event has guests (eventDiffs=99). We don't
+          // want to force guests to re-confirm, so go through the slow update
+          // process instead.
+          if (eventDiffs < 3 && eventDiffs !== EVENT_DIFFS_WITH_GUESTS) {
+            numUpdates += updateEvent(calEvent, convertedCalEvent, sheetEvent);
+          } else {
+            addEvent = true;
+            calEventIds[eventIdx] = sheetEvent.id;
           }
         }
       }
     }
+    console.info('%d updates, time: %d msecs', numUpdates, Date.now() - scriptStart);
+
     if (addEvent) {
       var newEvent;
       sheetEvent.sendInvites = SEND_EMAIL_INVITES;
@@ -415,23 +458,29 @@ function syncToCalendar() {
       }
       // Put event ID back into spreadsheet
       idData[ridx][0] = newEvent.getId();
-      changesMade = true;
+      eventsAdded = true;
 
       // Set event color
       if (sheetEvent.color > 0 && sheetEvent.color < 12) {
         newEvent.setColor('' + sheetEvent.color);
       }
 
-      // Maybe throttle updates.
-      numChanges++;
-      if (numChanges > THROTTLE_THRESHOLD) {
-        Utilities.sleep(THROTTLE_SLEEP_TIME);
+      // Throttle updates.
+      numAdded++;
+      Utilities.sleep(THROTTLE_SLEEP_TIME);
+      if (numAdded % 10 === 0) {
+        console.info('%d events added, time: %d msecs', numAdded, Date.now() - scriptStart);
       }
+    }
+    // If the script is getting close to timing out, save the event IDs added so far to avoid lots
+    // of duplicate events.
+    if ((Date.now() - scriptStart) > MAX_RUN_TIME) {
+      idRange.setValues(idData);
     }
   }
 
   // Save spreadsheet changes
-  if (changesMade) {
+  if (eventsAdded) {
     idRange.setValues(idData);
   }
 
@@ -444,21 +493,22 @@ function syncToCalendar() {
   }, 0);
   if (numToRemove > 0) {
     var ui = SpreadsheetApp.getUi();
-    var response = ui.Button.YES;
-    if (numToRemove > numUpdated) {
-      response = ui.alert('Delete ' + numToRemove + ' calendar event(s) not found in spreadsheet?',
+    var response = ui.alert('Delete ' + numToRemove + ' calendar event(s) not found in spreadsheet?',
           ui.ButtonSet.YES_NO);
-    }
     if (response == ui.Button.YES) {
+      var numRemoved = 0;
       calEventIds.forEach(function(id, idx) {
         if (id != null) {
           calEvents[idx].deleteEvent();
-          Utilities.sleep(20);
+          Utilities.sleep(THROTTLE_SLEEP_TIME);
+          numRemoved++;
+          if (numRemoved % 10 === 0) {
+            console.info('%d events removed, time: %d msecs', numRemoved, Date.now() - scriptStart);
+          }
         }
       });
     }
   }
-  Logger.log('Updated %s calendar events', numChanges);
 }
 
 // Set up a trigger to automatically update the calendar when the spreadsheet is

@@ -23,19 +23,21 @@ Leave the end time blank in the spreadsheet to create an all day event for one d
 
 ## Set Up
 
-Part 1. Set up the calendar:
-* Create a new Google Calendar (in the dropdown next to "My calendars" in the left sidebar
+**Part 1** Set up the calendar:
+* Create a new Google Calendar (in the dropdown next to "Other calendars" in the left sidebar
   of Calendar).
-* Give the calendar a name and change other fields as desired, i.e. set up sharing.
+* Give the calendar a name and change other fields as desired, e.g. time zone. Exit settings
+  and you should see the new calendar in the left sidebar.
 * Open the new calendar's settings ("Settings and sharing" in the dropdown next to the calendar name).
 * Scroll down to the "Integrate calendar" section. Copy the "Calendar ID". It should look like an
   email address.
 
-You have 2 options at this point. Copy an example spreadsheet that already has the script set up,
-or use your own spreadsheet and add the script to it. The first option is a little easier. Using
-your own spreadsheet will just take a little extra work to set up the column headers correctly.
+**Part 2** You have 2 options for the spreadsheet. Copy an example spreadsheet that already has the
+script set up, or use your own spreadsheet and add the script to it. The first option is a little
+easier. Using your own spreadsheet will just take a little extra attention to detail to set up the
+column headers correctly.
 
-Part 2a. Copy and modify the example spreadsheet:
+Option 2a. Copy and modify the example spreadsheet:
 * Make a copy of
   [this spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
   (use File -> Make a copy).
@@ -45,9 +47,9 @@ Part 2a. Copy and modify the example spreadsheet:
 * Set the correct time zone in File, Spreadsheet settings.
 * Save the script.
 
-Part 2b. If instead you want to create a new spreadsheet from scratch, or use one you already have:
+Option 2b. If instead you want to create a new spreadsheet from scratch, or use one you already have:
 * Create or open a Google Spreadsheet at http://drive.google.com.
-* Create columns with these names (can be in any order):
+* Create columns with these exact names (can be in any order and capitalization isn't significant):
   * Title - event title
   * Description - event description (optional)
   * Start Time - start date and time for the event, e.g. "1/27/2016 5:25pm". Should be just a date
@@ -101,7 +103,7 @@ up. Click "Continue" and select your account in the next dialog. Then a somewhat
 will appear. Google is trying to protect against some malicious Apps scripts that were floating
 around. I haven't jumped through the steps yet to become a trusted developer. By publishing the
 source for this script, everybody can verify for themselves that it isn't doing anything nefarious.
-If you trust that, click on "Advanced" and then the link at the bottom ending in "unsafe". Finally,
+If you trust that, click on "Advanced" and then the link at the bottom ending in "(unsafe)". Finally,
 click "Allow" in the next dialog.
 
 Depending on the number of changes, the script runs in a few seconds to a few minutes.
@@ -133,11 +135,13 @@ pop-up dialog, it will tell you which event has the error. Fix the error and run
 [test spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
 for examples of correct and incorrect date/times.
 
-If the script runs more than several minutes, it will be stopped. Try adding or updating
-events in smaller batches--maybe a few hundred at a time? Or you can try reducing the number in the
-"Utilities.sleep()" calls in the script.
+If the script runs more than several minutes, it will run out of time and be stopped. You should be
+able to run it again and it will do the next batch of changes. About 900 calendar operations can be
+done in one run, where an operation is updating one event field, adding an event, or removing an
+event.
 
-If you get an error about too many Calendar calls in a short amount of time, try increasing the
-values in Utilities.sleep().
+If you get an error about too many Calendar events being added or removed in a short amount of time,
+try increasing the THROTTLE_SLEEP_TIME value in Utilities.sleep(). I did several experiements with
+240 events, and found that 200 msec is very reliable.
 
 Other issues? Contact me or file an issue in GitHub.
