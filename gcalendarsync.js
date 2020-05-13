@@ -492,10 +492,10 @@ function syncToCalendar() {
     return prevVal;
   }, 0);
   if (numToRemove > 0) {
-    var ui = SpreadsheetApp.getUi();
-    var response = ui.alert('Delete ' + numToRemove + ' calendar event(s) not found in spreadsheet?',
-          ui.ButtonSet.YES_NO);
-    if (response == ui.Button.YES) {
+    //var ui = SpreadsheetApp.getUi();
+    //var response = ui.alert('Delete ' + numToRemove + ' calendar event(s) not found in spreadsheet?',
+    //      ui.ButtonSet.YES_NO);
+    //if (response == ui.Button.YES) {
       var numRemoved = 0;
       calEventIds.forEach(function(id, idx) {
         if (id != null) {
@@ -507,7 +507,7 @@ function syncToCalendar() {
           }
         }
       });
-    }
+    //}
   }
 }
 
