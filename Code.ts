@@ -39,7 +39,6 @@ function setUpSheet(sheet, fieldKeys) {
   sheet.getRange(1, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat(dateFormat);
   sheet.hideColumns(fieldKeys.indexOf('id') + 1);
   // TODO: Is there a way to set up checkbox data validation?
-  // TODO: Add checkbox instructions to README.
 }
 
 // Synchronize from calendar to spreadsheet.

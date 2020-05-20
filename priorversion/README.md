@@ -1,7 +1,8 @@
 # gcalendarsync
 
 **Note:** This is an old version. A newer version exists which is available in the GSuite
-Marketplace, making it much easier to install and use. See the [new version](..) for more info.
+Marketplace, making it much easier to install and use. See the
+[new version](https://github.com/Davepar/gcalendarsync) for more info.
 
 Apps Script for syncing a Google Spreadsheet with Google Calendar. Two commands are added in a
 "Calendar Sync" menu. One copies events from a calendar into a spreadsheet. The other commands
