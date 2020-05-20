@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for f in GenericEvent.ts Settings.ts Util.ts Code.ts
+do
+  sed -i 's|/\*% \*/|/\*%|' $f
+  sed -i 's|/\* %\*/|%\*/|' $f
+done

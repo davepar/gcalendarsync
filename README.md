@@ -1,54 +1,69 @@
 # gcalendarsync
-Apps Script for syncing a Google Spreadsheet with Google Calendar. Two commands are added in a
-"Calendar Sync" menu. One copies events from a calendar into a spreadsheet. The other commands
-goes in the opposite direction, spreadsheet to calendar.
+A Google Sheet add-on for syncing events with Google Calendar. Want to easily enter a
+bunch of events into Google Calendar? Enter them into a spreadsheet instead and use this script
+to copy them to the calendar. Have a lot of events in a calendar, but need to modify them?
+This add-on will make that easy as well. Sync from calendar to spreadsheet, make your changes,
+and then sync back to the calendar.
 
-I started this project for creating and updating a quarterly calendar for my swimming group.
-It's much easier to type a work out schedule into a spreadsheet than Google Calendar. I'm no
-longer actively using the script, but happy to work on bugs or features occasionally. Also
-feel free to make fixes yourself and send me pull requests. (Oct 2017)
+There is also a [website](http://www.ballardsoftwarefoundry.com/gcalendarsync.html) for the add on.
+
+## Install
+
+Find the add-on in the GSuite Marketplace and install it from there.
+(Note: Waiting on approval as of May 20, 2020.)
+
+Two commands are added in a "GCalendar Sync" menu. One copies events from a calendar into
+a spreadsheet. The other commands goes in the opposite direction, spreadsheet to calendar.
 
 ## Limitations
 
-WARNING: Events may be removed! If you're copying to the calendar, any event not found in the
-spreadsheet will be deleted! Likewise copying to the spreadsheet will delete any rows not found
-in the calendar. It's a good idea to try copying into a fresh spreadsheet tab as an experiment
-the first time you run it. "Undo" may also save you.
+1. **WARNING:** Events may be removed! If you're copying to a calendar with existing events, those
+  events will be deleted unless they are in the spreadsheet. Likewise copying to the spreadsheet
+  will delete spreadsheet rows not found in the calendar. It's a good idea to try syncing with a
+  fresh spreadsheet as an experiment the first time you run it. Or work with a copy of your
+  spreadsheet (File -> Make a copy). "Undo" may save you, but it may not. Be careful!
 
-Recurring events are not currenty supported.
-
-Google Calendar doesn't support multi-day "all day" events in the API. This causes the "all day"
-indicator to disappear when syncing multi-day events to the spreadsheet and back to the calendar.
-Leave the end time blank in the spreadsheet to create an all day event for one day.
+2. Recurring events are not currenty supported.
+  ([File an issue](https://github.com/Davepar/gcalendarsync/issues) if you're interested in this.)
 
 ## Set Up
 
-**Part 1** Set up the calendar:
-* Create a new Google Calendar (in the dropdown next to "Other calendars" in the left sidebar
-  of Calendar).
-* Give the calendar a name and change other fields as desired, e.g. time zone. Exit settings
+The set up involves preparing a Google Calendar and Google Sheet.
+
+**Calendar** Set up the calendar:
+* Use an existing Google Calendar or create a new one (click the plus sign next to "Other calendars"
+  in the left sidebar of Calendar).
+* Give a new calendar a name and change other fields as desired, e.g. time zone. Exit settings
   and you should see the new calendar in the left sidebar.
-* Open the new calendar's settings ("Settings and sharing" in the dropdown next to the calendar name).
+* Open the calendar's settings by clicking on it's name.
 * Scroll down to the "Integrate calendar" section. Copy the "Calendar ID". It should look like an
   email address.
 
-**Part 2** You have 2 options for the spreadsheet. Copy an example spreadsheet that already has the
-script set up, or use your own spreadsheet and add the script to it. The first option is a little
-easier. Using your own spreadsheet will just take a little extra attention to detail to set up the
-column headers correctly.
+**Sheet** You have 3 options for the Google Sheet: let the add-on create the spreadsheet columns
+for you, copy an example spreadsheet, or use your own
+existing spreadsheet. The first two options are easier. Using your own spreadsheet will just
+take a little extra attention when setting up the column headers.
 
-Option 2a. Copy and modify the example spreadsheet:
+Step 1. All of the options below require the following:
+* Install the GCalendar Sync add on.
+* Open the GCalendar Sync Settings and paste in the calendar ID copied above.
+* Go to File, Spreadsheet settings, and make sure the time zone matches the time zone you have set
+  in your Calendar settings.
+
+Option 2a. Let the add-on create the columns. This is a great option for an existing calendar and
+an empty spreadsheet.
+* Follow the steps in Step 1 above.
+* Select Update from Calendar. This will create the required column headers for you.
+
+Option 2b. Copy and modify the example spreadsheet.
 * Make a copy of
-  [this spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
+  [this spreadsheet](https://docs.google.com/spreadsheets/d/1ap_PZXjgPtW1VA5LOQNCIWAGbIGyDfx8npnG_AAnE0c)
   (use File -> Make a copy).
-* In the Tools menu, select Script Editor.
-* Replace the "calendarId" value near the beginning of the script with the Calendar ID from Part 1,
-  above.
-* Set the correct time zone in File, Spreadsheet settings.
-* Save the script.
+* Follow the steps in Step 1 above.
 
-Option 2b. If instead you want to create a new spreadsheet from scratch, or use one you already have:
+Option 2c. Create a new spreadsheet yourself, or use one you already have.
 * Create or open a Google Spreadsheet at http://drive.google.com.
+* Follow the steps in Step 1 above.
 * Create columns with these exact names (can be in any order and capitalization isn't significant):
   * Title - event title
   * Description - event description (optional)
@@ -61,79 +76,41 @@ Option 2b. If instead you want to create a new spreadsheet from scratch, or use 
   * Color - a number from 1 to 11 that represents a color to set on the event. See the
     [list of colors](https://developers.google.com/apps-script/reference/calendar/event-color).
     (optional)
-  * Id - used for syncing with calendar. This column could be hidden to prevent accidental edits.
-* In the Tools menu, select Script Editor.
-* Give the project a name.
-* Paste in the code from
-  [gcalendarsync.js](https://raw.githubusercontent.com/Davepar/gcalendarsync/master/gcalendarsync.js).
-* For the "calendarId" value in the script, paste in the Calendar ID from above.
-* Save the script.
+  * All Day - when "use column" is selected in Settings, the value TRUE or FALSE will indicate
+    whether an event is all day. This column is best formatted as a checkbox. Select all the cells
+    in the column and then use the menu Insert -> Checkbox. (optional)
+  * Id - used for syncing with calendar. This column should be hidden to prevent accidental edits.
 
-That's it. Start entering and modifying events. You can add extra columns, and they'll be ignored.
-See the "How to Sync" section below for how to run the script.
+That's it. Start entering and modifying events. Any extra columns that you add with
+other names will be ignored. See the "How to Sync" section below for how to run the script.
 
-## Configuration options
+## Settings
 
-There are three variables near the top of the script that can be modified:
-* beginDate/endDate - Set these to sync up a smaller range of dates. The numbers are year, month,
-  date, where month is 0 for Jan through 11 for Dec. beginDate can also be set to today's date to
-  ignore everything in the past: `var beginDate = new Date()`. When syncing from calendar to sheet,
-  any rows outside the range will be removed. Syncing from sheet to calendar simply ignores any
+The following settings affect how events are synced:
+* Start date, end date - Set these to sync up a smaller range of dates. When syncing *from* calendar,
+  any rows outside the range will be removed from the sheet. Syncing *to* calendar simply ignores any
   events outside the range.
-* dateFormat - The date/time format to use when setting up the spreadsheet.
-
-## Custom column names
-
-Custom column names are now supported. In the script, find the "titleRowMap" variable. Change the
-second entry on each line to match your column names. If you're not using one of the
-optional fields, just leave it in titleRowMap.
-
-## Time zones
-
-There doesn't seem to be a way to enter a time zone for individual events into Google Spreadsheet.
-The only option is to change the timezone for the entire spreadsheet. Look in the File menu,
-Spreadsheet settings ([more info](https://support.google.com/docs/answer/58515?hl=en)).
+* Send email invites - Controls whether to send invites to guests when adding or updating events and
+  syncing *to* calendar.
+* Skip blank rows - Whether to show a warning dialog for blank rows in the data.
+* All day events - Allows events by default to have a start/end time, or be all day. The third option
+  requires a column called "All Day" that should be either the value TRUE or FALSE to indicate all day.
 
 ## How to Sync
 
 In the spreadsheet, select the desired sheet (tabs at the bottom of the spreadsheet) and then look
-for a "Calendar Sync" menu. Choose "Update from Calendar" or "Update to Calendar" depending on the
+for a "GCalendar Sync" menu. Choose "Update from Calendar" or "Update to Calendar" depending on the
 direction you want to sync. The first time you do this, an "Authorization Required" dialog will pop
-up. Click "Continue" and select your account in the next dialog. Then a somewhat scary dialog
-will appear. Google is trying to protect against some malicious Apps scripts that were floating
-around. I haven't jumped through the steps yet to become a trusted developer. By publishing the
-source for this script, everybody can verify for themselves that it isn't doing anything nefarious.
-If you trust that, click on "Advanced" and then the link at the bottom ending in "(unsafe)". Finally,
-click "Allow" in the next dialog.
+up. Click "Continue" and select your account in the next dialog.
 
 Depending on the number of changes, the script runs in a few seconds to a few minutes.
-
-## Automatically syncing
-
-You can also set up the script to automatically update a calendar whenever the sheet is
-updated. This is really handy if your sheet is associated with a form for adding events.
-
-Use the Run -> Run function menu to execute the "createSpreadsheetEditTrigger" function
-one time. You will need to approve some special permissions. A popup dialog will say
-"This app isn't verified". This is because the spreadsheet will be modifying the calendar
-even when you aren't logged in. You can get around this by clicking "Advanced" in the
-dialog and then clicking on your spreadsheet name. Approve the permissions in the next
-dialog. You can modify the trigger by reading the
-[documentation](https://developers.google.com/apps-script/guides/triggers/events).
-
-To remove the trigger, use the same menu command to run the deleteTrigger function.
-
-IMPORTANT: Be careful who has permissions to edit the spreadsheet and script. Once you
-set up the trigger to run, someone else could modify the script maliciously.
 
 ## Troubleshooting
 
 When an error occurs, the sync can generally be tried again without any bad side effects.
 
 There are some data checks in the script for correctly formatted dates and times. If you see a
-pop-up dialog, it will tell you which event has the error. Fix the error and run it again. See the
-[test spreadsheet](https://docs.google.com/spreadsheets/d/1b0BBnmoDT4uDbN0pYsH--mpasFR45QlgNMTwUH-7MqU)
-for examples of correct and incorrect date/times.
+pop-up dialog, it will tell you which event has the error. Fix the error and run it again.
 
 If the script runs more than several minutes, it will run out of time and be stopped. You should be
 able to run it again and it will do the next batch of changes. About 900 calendar operations can be
@@ -141,7 +118,22 @@ done in one run, where an operation is updating one event field, adding an event
 event.
 
 If you get an error about too many Calendar events being added or removed in a short amount of time,
-try increasing the THROTTLE_SLEEP_TIME value in Utilities.sleep(). I did several experiements with
-240 events, and found that 200 msec is very reliable.
+try setting start/end date in settings to reduce the amount of events being synced. Or file an issue.
 
-Other issues? Contact me or file an issue in GitHub.
+## Contributing
+
+The project started as a simple script to publish swim team practice times on a Google Calendar
+and has evolved from there. Fixes and improvements are done by volunteers, so please be patient.
+
+You're also welcome to dive into the code and send suggested changes and fixes as a pull request
+or as text. To try your own changes, you'll need to install Clasp in order to compile the Typescript
+and push it to a project. Follow the instructions
+[here](https://developers.google.com/apps-script/guides/typescript).
+
+Running the tests requires running a special pre/post script to modify imports:
+    $ ./pretest
+    $ npm test
+    $ ./posttest
+
+Other issues? [Contact me](http://www.ballardsoftwarefoundry.com/gcalendarsync.html) or file an
+issue in GitHub.
