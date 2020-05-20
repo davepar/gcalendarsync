@@ -1,4 +1,7 @@
-# gcalendarsync
+# GCalendar Sync
+
+**Note:** The older version of the script is in the [priorversion](./priorversion) directory.
+
 A Google Sheet add-on for syncing events with Google Calendar. Want to easily enter a
 bunch of events into Google Calendar? Enter them into a spreadsheet instead and use this script
 to copy them to the calendar. Have a lot of events in a calendar, but need to modify them?
