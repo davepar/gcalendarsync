@@ -1,0 +1,98 @@
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <style>
+      div.error {
+        margin-top: 8px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <form id="settingsform">
+      <div class="block form-group">
+        <label for="calendar_id">Calendar ID</label>
+        <input type='text' id="calendar_id" name="calendar_id" required/>
+      </div>
+      <div class="block form-group">
+        <label for="begin_date">Start date (yyyy-mm-dd)</label>
+        <input type='text' id="begin_date" name="begin_date" required
+          pattern="\d{4}-\d{1,2}-\d{1,2}"/>
+      </div>
+      <div class="block form-group">
+        <label for="end_date">End date (yyyy-mm-dd)</label>
+        <input type='text' id="end_date" name="end_date" required
+          pattern="\d{4}-\d{1,2}-\d{1,2}"/>
+      </div>
+      <div class="block form-group">
+        <div>
+          <input type="checkbox" id="send_email_invites" name="send_email_invites"
+            title="Send invites to guests when event is added to calendar"/>
+          <label for="send_email_invites">Send email invites</label>
+        </div>
+        <div>
+          <input type="checkbox" id="skip_blank_rows" name="skip_blank_rows"/>
+          <label for="skip_blank_rows">Skip blank rows</label>
+        </div>
+      </div>
+      <div class="block form-group">
+        All day events:
+        <div>
+          <input type="radio" name="all_day_events" id="use_column" value="USE_COLUMN" checked/>
+          <label for="use_column">Use "All Day" column</label>
+        </div>
+        <div>
+          <input type="radio" name="all_day_events" id="always_all_day" value="ALWAYS_ALL_DAY"/>
+          <label for="always_all_day">Events are always all day</label>
+        </div>
+        <div>
+          <input type="radio" name="all_day_events" id="never_all_day" value="NEVER_ALL_DAY"/>
+          <label for="never_all_day">Events are never all day</label>
+        </div>
+      </div>
+      <div id="error_msg" class="error"></div>
+      <div class="block form-group">
+        <button type="submit" class="action">Save</button>
+      </div>
+    </form>
+    <script>
+    function populateUserSettings(userSettings) {
+      var calendar_id_el = document.getElementById("calendar_id");
+      calendar_id_el.value = userSettings.calendar_id;
+      document.getElementById("begin_date").value = userSettings.begin_date;
+      document.getElementById("end_date").value = userSettings.end_date;
+      document.getElementById("send_email_invites").checked = userSettings.send_email_invites;
+      document.getElementById("skip_blank_rows").checked = userSettings.skip_blank_rows;
+      document.getElementById(userSettings.all_day_events).checked = true;
+      if (!userSettings.calendar_id) {
+        calendar_id_el.focus();
+      }
+    }
+    google.script.run.withSuccessHandler(populateUserSettings).getUserSettingsForForm();
+    document.querySelector("#settingsform").addEventListener("submit",
+      function(e)
+        {
+          // Stop form from submitting
+          e.preventDefault();
+          // Get form values
+          var formValues = {
+            calendar_id: document.getElementById('calendar_id').value,
+            begin_date: document.getElementById('begin_date').value,
+            end_date: document.getElementById('end_date').value,
+            send_email_invites: document.getElementById('send_email_invites').checked,
+            skip_blank_rows: document.getElementById('skip_blank_rows').checked,
+            all_day_events: document.querySelector('input[name="all_day_events"]:checked').value
+          }
+          // Call the function in the script to save the values.
+          google.script.run.withSuccessHandler(closeModalDialog).withFailureHandler(showErrorMsg).saveUserSettings(formValues);
+        });
+    function closeModalDialog() {
+      google.script.host.close();
+    }
+    function showErrorMsg(e) {
+      document.getElementById("error_msg").textContent = e.message;
+    }
+    </script>
+  </body>
+</html>
