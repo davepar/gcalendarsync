@@ -19,6 +19,7 @@ and push it to a project. Follow the instructions
 [here](https://developers.google.com/apps-script/guides/typescript).
 
 Running the tests requires running a special pre/post script to modify imports:
+
     $ ./pretest
     $ npm test
     $ ./posttest
