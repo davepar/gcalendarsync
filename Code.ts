@@ -31,14 +31,14 @@ function onOpen() {
 }
 
 // Set up formats and hide ID column for empty spreadsheet
-function setUpSheet(sheet, fieldKeys) {
+function setUpSheet(sheet, fieldKeys, numDataRows: number) {
   // Date format to use in the spreadsheet. Meaning of letters defined at
   // https://developers.google.com/sheets/api/guides/formats
-  const dateFormat = 'M/d/yyyy H:mm';
+  const dateFormat = 'M/d/yyyy H:mm a/p';
   sheet.getRange(2, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat(dateFormat);
   sheet.getRange(2, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat(dateFormat);
   let checkboxRule = SpreadsheetApp.newDataValidation().requireCheckbox().build();
-  sheet.getRange(2, fieldKeys.indexOf('allday') + 1, 999).setDataValidation(checkboxRule);
+  sheet.getRange(2, fieldKeys.indexOf('allday') + 1, numDataRows).setDataValidation(checkboxRule);
   sheet.hideColumns(fieldKeys.indexOf('id') + 1);
 }
 
@@ -72,14 +72,14 @@ function syncFromCalendar() {
     data.push(titleRow);
     range = sheet.getRange(1, 1, data.length, data[0].length);
     range.setValues(data);
-    setUpSheet(sheet, Util.TITLE_ROW_KEYS);
+    setUpSheet(sheet, Util.TITLE_ROW_KEYS, calEvents.length);
   }
 
   if (data.length == 1 && data[0].length == 1 && data[0][0] === '') {
     data[0] = titleRow;
     range = sheet.getRange(1, 1, data.length, data[0].length);
     range.setValues(data);
-    setUpSheet(sheet, Util.TITLE_ROW_KEYS);
+    setUpSheet(sheet, Util.TITLE_ROW_KEYS, calEvents.length);
   }
 
   // Map spreadsheet headers to indices
@@ -385,27 +385,6 @@ function saveUserSettings(formValues) {
 // This can be used during debugging from the Script Editor to remove all user settings.
 function killUserSettings() {
   PropertiesService.getDocumentProperties().deleteAllProperties();
-}
-
-// Set up a trigger to automatically update the calendar when the spreadsheet is
-// modified. See the instructions for how to use this.
-function createSpreadsheetEditTrigger() {
-  const ss = SpreadsheetApp.getActive();
-  ScriptApp.newTrigger('syncToCalendar')
-      .forSpreadsheet(ss)
-      .onEdit()
-      .create();
-}
-
-// Delete the trigger. Use this to stop automatically updating the calendar.
-function deleteTrigger() {
-  // Loop over all triggers.
-  const allTriggers = ScriptApp.getProjectTriggers();
-  for (let trigger of allTriggers) {
-    if (trigger.getHandlerFunction() === 'syncToCalendar') {
-      ScriptApp.deleteTrigger(trigger);
-    }
-  }
 }
 
 // Simple function to test syntax of this script, since otherwise it's not exercised until the
