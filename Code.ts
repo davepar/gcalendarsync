@@ -35,10 +35,11 @@ function setUpSheet(sheet, fieldKeys) {
   // Date format to use in the spreadsheet. Meaning of letters defined at
   // https://developers.google.com/sheets/api/guides/formats
   const dateFormat = 'M/d/yyyy H:mm';
-  sheet.getRange(1, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat(dateFormat);
-  sheet.getRange(1, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat(dateFormat);
+  sheet.getRange(2, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat(dateFormat);
+  sheet.getRange(2, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat(dateFormat);
+  let checkboxRule = SpreadsheetApp.newDataValidation().requireCheckbox().build();
+  sheet.getRange(2, fieldKeys.indexOf('allday') + 1, 999).setDataValidation(checkboxRule);
   sheet.hideColumns(fieldKeys.indexOf('id') + 1);
-  // TODO: Is there a way to set up checkbox data validation?
 }
 
 // Synchronize from calendar to spreadsheet.
