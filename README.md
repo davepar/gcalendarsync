@@ -23,5 +23,5 @@ Running the tests requires running a special pre/post script to modify imports:
     $ npm test
     $ ./posttest
 
-Other issues? [Contact me](http://www.ballardsoftwarefoundry.com/gcalendarsync.html) or file an
-issue in GitHub.
+Find a bug? File an issue here on Github or email me via the link in the
+[Contact section](http://www.ballardsoftwarefoundry.com/gcalendarsync.html#contact) of the website.
