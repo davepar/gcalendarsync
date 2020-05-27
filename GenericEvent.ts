@@ -62,7 +62,12 @@
         } else if (field === 'allday') {
           event[field] = (value === true);
         } else if (field === 'color') {
-          event[field] = value ? (EventColor[value] + 1).toString() : '';
+          if (value) {
+            value = EventColor[value];
+            event[field] = isNaN(value) ? '' : (value + 1).toString();
+          } else {
+            event[field] = '';
+          }
         } else {
           event[field] = value;
         }

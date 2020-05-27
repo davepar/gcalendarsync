@@ -8,7 +8,7 @@
 // uncomment and re-comment these lines.
 /*% import {Settings, AllDayValue} from './Settings'; %*/
 /*% import {Util} from './Util'; %*/
-/*% import {GenericEvent} from './GenericEvent'; %*/
+/*% import {EventColor, GenericEvent} from './GenericEvent'; %*/
 
 // Defines the fields for the user settings. The property names must match the code for the
 // settings dialog in SettingsDialog.html.
@@ -40,6 +40,14 @@ function setUpSheet(sheet, fieldKeys, numDataRows: number) {
   let checkboxRule = SpreadsheetApp.newDataValidation().requireCheckbox().build();
   sheet.getRange(2, fieldKeys.indexOf('allday') + 1, numDataRows).setDataValidation(checkboxRule);
   sheet.hideColumns(fieldKeys.indexOf('id') + 1);
+  const colorList = [];
+  for (let enumColor in EventColor) {
+    if (isNaN(parseInt(enumColor, 10))) {
+      colorList.push(enumColor);
+    }
+  }
+  let colorDropdownRule = SpreadsheetApp.newDataValidation().requireValueInList(colorList, true).build();
+  sheet.getRange(2, fieldKeys.indexOf('color') + 1, numDataRows).setDataValidation(colorDropdownRule);
 }
 
 // Synchronize from calendar to spreadsheet.

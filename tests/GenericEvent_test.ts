@@ -19,6 +19,8 @@ const EVENT_ALLDAY_VALUES = ['testid4', 'Test Title 4', 'Test Description 4', 'T
   '', '', true, DATE4, DATE5];
 const EVENT_BADDATES_VALUES = ['testid5', 'Test Title 5', 'Test Description 5', 'Test Location 5',
   '', '', false, 'abc', 0]
+  const EVENT_BADCOLOR_VALUES = ['testid6', 'Test Title 6', 'Test Description 6', 'Test Location 6',
+  '', 'foobar', false, DATE2, DATE3]
 
 const IDX_MAP = Util.createIdxMap(['Id', 'Title', 'Description', 'Location', 'Guests', 'Color',
   'All Day', 'Start Time', 'End Time']);
@@ -79,6 +81,10 @@ describe('GenericEvent', () => {
     it('handles never all-day event', () => {
       const event_allday_fromsheet = GenericEvent.fromSpreadsheetRow(EVENT_ALLDAY_VALUES, IDX_MAP, [], AllDayValue.never_all_day);
       expect(event_allday_fromsheet.allday).toBeFalsy();
+    });
+    it('skips bad color', () => {
+      const event_allday_fromsheet = GenericEvent.fromSpreadsheetRow(EVENT_BADCOLOR_VALUES, IDX_MAP, [], AllDayValue.use_column);
+      expect(event_allday_fromsheet.color).toEqual('');
     });
   });
 
