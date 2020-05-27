@@ -1,6 +1,7 @@
 import {GenericEvent} from '../GenericEvent';
 import {Util} from '../Util';
 import {AllDayValue} from '../Settings';
+import {FakeCalendarEvent} from './FakeCalendarEvent';
 
 const DATE1 = new Date('1995-12-17T03:24:00');
 const DATE2 = new Date('1995-12-18T04:56:00');
@@ -9,13 +10,13 @@ const DATE4 = new Date('1995-12-20T00:00:00');
 const DATE5 = new Date('1995-12-22T00:00:00');
 
 const EVENT1_VALUES = ['testid1', 'Test Title 1', 'Test Description 1', 'Test Location 1',
-  'guest1@example.com,guest2@example.com', 'blue', false, DATE1, DATE2];
+  'guest1@example.com,guest2@example.com', '1', false, DATE1, DATE2];
 const EVENT2_VALUES = ['testid2', 'Test Title 2', 'Test Description 2', 'Test Location 2',
-  'guest3@example.com,guest4@example.com', 'red', false, DATE2, DATE3];
+  'guest3@example.com,guest4@example.com', '2', false, DATE2, DATE3];
 const EVENT_NOGUESTS_VALUES = ['testid3', 'Test Title 3', 'Test Description 3', 'Test Location 3',
-  '', 'green', false, DATE2, DATE3];
+  '', '3', false, DATE2, DATE3];
 const EVENT_ALLDAY_VALUES = ['testid4', 'Test Title 4', 'Test Description 4', 'Test Location 4',
-  '', 'red', true, DATE4, DATE5];
+  '', '4', true, DATE4, DATE5];
 const EVENT_BADDATES_VALUES = ['testid5', 'Test Title 5', 'Test Description 5', 'Test Location 5',
   '', '', false, 'abc', 0]
 
@@ -34,6 +35,20 @@ describe('GenericEvent', () => {
   });
   it('instantiates correctly', () => {
     expect(event1.id).toBe('testid1');
+  });
+
+  describe('fromCalendarEvent', () => {
+    it('initantiates correctly with all fields', () => {
+      const fakeCalEvent = FakeCalendarEvent.fromArray(EVENT1_VALUES);
+      const event1_fromcal = GenericEvent.fromCalendarEvent(fakeCalEvent);
+      expect(event1_fromcal).toEqual(event1);
+    });
+
+    it('initantiates correctly for all day events', () => {
+      const fakeCalEvent = FakeCalendarEvent.fromArray(EVENT_ALLDAY_VALUES);
+      const event_allday_fromcal = GenericEvent.fromCalendarEvent(fakeCalEvent);
+      expect(event_allday_fromcal).toEqual(event_allday);
+    });
   });
 
   describe('fromSpreadsheetRow', () => {
