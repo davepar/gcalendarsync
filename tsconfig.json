@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
-    "typeRoots" : ["./node_modules/@types"]
+    "typeRoots" : ["./node_modules/@types"],
+    "noImplicitAny" : true,
+    "lib": ["es5", "es6"]
   }
 }

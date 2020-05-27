@@ -4,6 +4,9 @@
 
 /*% export %*/ enum EventColor { PALE_BLUE, PALE_GREEN, MAUVE, PALE_RED, YELLOW, ORANGE, CYAN, GRAY, BLUE, GREEN, RED }
 
+/*% export %*/ type GenericEventKey = 'id' | 'title' | 'description' | 'location' |
+  'guests' | 'color' | 'allday' | 'starttime' | 'endtime';
+
 /*% export %*/ class GenericEvent {
   constructor(
     public id: string,
@@ -52,7 +55,7 @@
   }
 
   // Convert a spreadsheet row to an instance of this class.
-  static fromSpreadsheetRow(row: any[], idxMap: string[], keysToAdd: string[],
+  static fromSpreadsheetRow(row: any[], idxMap: GenericEventKey[], keysToAdd: string[],
       all_day_events: AllDayValue) {
     const eventObject = row.reduce((event, value, idx) => {
       const field = idxMap[idx];
@@ -86,10 +89,10 @@
       starttime, endtime);
   }
 
-  toSpreadsheetRow(idxMap: string[], spreadsheetRow: any[]) {
+  toSpreadsheetRow(idxMap: GenericEventKey[], spreadsheetRow: any[]) {
     for (let idx = 0; idx < idxMap.length; idx++) {
       if (idxMap[idx] !== null) {
-        const value = this[idxMap[idx]];
+        const value = this[idxMap[idx]] as any;
         if (idxMap[idx] === 'allday') {
           spreadsheetRow[idx] = !!value;
         } else if (idxMap[idx] === 'color') {

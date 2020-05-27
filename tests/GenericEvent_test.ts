@@ -28,7 +28,7 @@ const IDX_MAP_NO_GUESTS = Util.createIdxMap(['Id', 'Title', 'Description', 'Loca
   'Start Time', 'End Time']);
 
 describe('GenericEvent', () => {
-  let event1, event2, event_noguests, event_allday: GenericEvent;
+  let event1: GenericEvent, event2: GenericEvent, event_noguests: GenericEvent, event_allday: GenericEvent;
   beforeAll(() => {
     event1 = GenericEvent.fromArray(EVENT1_VALUES);
     event2 = GenericEvent.fromArray(EVENT2_VALUES);

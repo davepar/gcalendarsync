@@ -1,7 +1,8 @@
 import {Util} from "../Util";
+import {GenericEventKey} from '../GenericEvent';
 
 const DATE1 = new Date('1995-12-17T03:24:00');
-const FAKE_IDX_MAP = ['id', null, 'title', 'description', 'color'];
+const FAKE_IDX_MAP: GenericEventKey[] = ['id', null, 'title', 'description', 'color'];
 
 describe('createIdxMap', () => {
   it('creates map', () => {

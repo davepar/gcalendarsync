@@ -28,7 +28,7 @@ export class FakeCalendarEvent implements GoogleAppsScript.Calendar.CalendarEven
   static fromArray(params: any[]) {
     const [id, title, description, location, guests, color, allday, starttime, endtime] =
       params;
-    let guestList = guests ? guests.split(',').map((x) => new FakeGuest(x.trim())) : [];
+    let guestList = guests ? guests.split(',').map((x: string) => new FakeGuest(x.trim())) : [];
     let convertedColor = color ? (EventColor[color] + 1).toString() : '';
     return new FakeCalendarEvent(id, title, description, location, guestList, convertedColor,
       allday, starttime, endtime);

@@ -83,7 +83,7 @@
             send_email_invites: document.getElementById('send_email_invites').checked,
             skip_blank_rows: document.getElementById('skip_blank_rows').checked,
             all_day_events: document.querySelector('input[name="all_day_events"]:checked').value
-          }
+          };
           // Call the function in the script to save the values.
           google.script.run.withSuccessHandler(closeModalDialog).withFailureHandler(showErrorMsg).saveUserSettings(formValues);
         });

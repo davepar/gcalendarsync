@@ -6,20 +6,9 @@
 
 // These imports are only used for testing. Run pretest and posttest scripts to automatically
 // uncomment and re-comment these lines.
-/*% import {Settings, AllDayValue} from './Settings'; %*/
+/*% import {Settings, UserSettings, ParsedUserSettings, AllDayValue} from './Settings'; %*/
 /*% import {Util} from './Util'; %*/
-/*% import {EventColor, GenericEvent} from './GenericEvent'; %*/
-
-// Defines the fields for the user settings. The property names must match the code for the
-// settings dialog in SettingsDialog.html.
-interface UserSettings {
-  calendar_id: string;
-  begin_date: Date;
-  end_date: Date;
-  send_email_invites: boolean;
-  skip_blank_rows: boolean;
-  all_day_events: AllDayValue;
-}
+/*% import {EventColor, GenericEvent, GenericEventKey} from './GenericEvent'; %*/
 
 // Create the add-on menu.
 function onOpen() {
@@ -31,23 +20,31 @@ function onOpen() {
 }
 
 // Set up formats and hide ID column for empty spreadsheet
-function setUpSheet(sheet, fieldKeys, numDataRows: number) {
+function setUpSheet(sheet: GoogleAppsScript.Spreadsheet.Sheet, fieldKeys: string[], numDataRows: number) {
   // Date format to use in the spreadsheet. Meaning of letters defined at
   // https://developers.google.com/sheets/api/guides/formats
   const dateFormat = 'M/d/yyyy H:mm a/p';
-  sheet.getRange(2, fieldKeys.indexOf('starttime') + 1, 999).setNumberFormat(dateFormat);
-  sheet.getRange(2, fieldKeys.indexOf('endtime') + 1, 999).setNumberFormat(dateFormat);
+  const getRangeByFieldName =
+    (fieldName: string, numRows: number) => sheet.getRange(2, fieldKeys.indexOf(fieldName) + 1, numRows);
+  getRangeByFieldName('starttime', 999).setNumberFormat(dateFormat);
+  getRangeByFieldName('endtime', 999).setNumberFormat(dateFormat);
   let checkboxRule = SpreadsheetApp.newDataValidation().requireCheckbox().build();
-  sheet.getRange(2, fieldKeys.indexOf('allday') + 1, numDataRows).setDataValidation(checkboxRule);
-  sheet.hideColumns(fieldKeys.indexOf('id') + 1);
+  getRangeByFieldName('allday', numDataRows).setDataValidation(checkboxRule);
   const colorList = [];
   for (let enumColor in EventColor) {
     if (isNaN(parseInt(enumColor, 10))) {
       colorList.push(enumColor);
     }
   }
-  let colorDropdownRule = SpreadsheetApp.newDataValidation().requireValueInList(colorList, true).build();
-  sheet.getRange(2, fieldKeys.indexOf('color') + 1, numDataRows).setDataValidation(colorDropdownRule);
+  let colorDropdownRule =
+    SpreadsheetApp.newDataValidation().requireValueInList(colorList, true).build();
+  getRangeByFieldName('color', numDataRows).setDataValidation(colorDropdownRule);
+  sheet.hideColumns(fieldKeys.indexOf('id') + 1);
+}
+
+function displayMissingFields(missingFields: GenericEventKey[]) {
+  const reqFieldNames = missingFields.map(x => Util.TITLE_ROW_MAP.get(x)).join(', ');
+  Util.errorAlert('Spreadsheet is missing ' + reqFieldNames + ' columns. See Help for more info.');
 }
 
 // Synchronize from calendar to spreadsheet.
@@ -58,7 +55,7 @@ function syncFromCalendar() {
     return;
   }
 
-  console.info('Starting sync from calendar');
+  Logger.log('Starting sync from calendar');
   // Get calendar events
   let calendar = CalendarApp.getCalendarById(userSettings.calendar_id);
   if (!calendar) {
@@ -75,19 +72,19 @@ function syncFromCalendar() {
   let eventFound = new Array(data.length);
 
   // Check if spreadsheet is empty and add a title row
-  const titleRow = Util.TITLE_ROW_KEYS.map(key => Util.TITLE_ROW_MAP[key]);
+  const titleRowValues = Array.from(Util.TITLE_ROW_MAP.values());
+  const titleRowKeys = Array.from(Util.TITLE_ROW_MAP.keys());
   if (data.length < 1) {
-    data.push(titleRow);
+    data.push(titleRowValues);
     range = sheet.getRange(1, 1, data.length, data[0].length);
     range.setValues(data);
-    setUpSheet(sheet, Util.TITLE_ROW_KEYS, calEvents.length);
+    setUpSheet(sheet, titleRowKeys, calEvents.length);
   }
-
   if (data.length == 1 && data[0].length == 1 && data[0][0] === '') {
-    data[0] = titleRow;
+    data[0] = titleRowValues;
     range = sheet.getRange(1, 1, data.length, data[0].length);
     range.setValues(data);
-    setUpSheet(sheet, Util.TITLE_ROW_KEYS, calEvents.length);
+    setUpSheet(sheet, titleRowKeys, calEvents.length);
   }
 
   // Map spreadsheet headers to indices
@@ -98,8 +95,7 @@ function syncFromCalendar() {
   const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
   let missingFields = Util.missingRequiredFields(idxMap, includeAllDay);
   if (missingFields.length > 0) {
-    const reqFieldNames = missingFields.map(x => Util.TITLE_ROW_MAP[x]).join(', ');
-    Util.errorAlert('Spreadsheet is missing ' + reqFieldNames + ' columns. See Help for more info.');
+    displayMissingFields(missingFields);
     return;
   }
 
@@ -151,7 +147,7 @@ function syncToCalendar() {
     return;
   }
 
-  console.info('Starting sync to calendar');
+  Logger.log('Starting sync to calendar');
   let scriptStart = Date.now();
   // Get calendar and events
   let calendar = CalendarApp.getCalendarById(userSettings.calendar_id);
@@ -182,8 +178,7 @@ function syncToCalendar() {
   const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
   let missingFields = Util.missingRequiredFields(idxMap, includeAllDay);
   if (missingFields.length > 0) {
-    let reqFieldNames = missingFields.map(x => Util.TITLE_ROW_MAP[x]).join(', ');
-    Util.errorAlert('Spreadsheet is missing ' + reqFieldNames + ' columns. See help for more info.');
+    displayMissingFields(missingFields);
     return;
   }
 
@@ -250,7 +245,7 @@ function syncToCalendar() {
         }
       }
     }
-    console.info('%d updates, time: %d msecs', numUpdates, Date.now() - scriptStart);
+    Logger.log('%d updates, time: %d msecs', numUpdates, Date.now() - scriptStart);
 
     if (addEvent) {
       const eventOptions = {
@@ -282,7 +277,7 @@ function syncToCalendar() {
       numAdded++;
       Utilities.sleep(Settings.THROTTLE_SLEEP_TIME);
       if (numAdded % 10 === 0) {
-        console.info('%d events added, time: %d msecs', numAdded, Date.now() - scriptStart);
+        Logger.log('%d events added, time: %d msecs', numAdded, Date.now() - scriptStart);
       }
     }
     // If the script is getting close to timing out, save the event IDs added so far to avoid lots
@@ -316,7 +311,7 @@ function syncToCalendar() {
           Utilities.sleep(Settings.THROTTLE_SLEEP_TIME);
           numRemoved++;
           if (numRemoved % 10 === 0) {
-            console.info('%d events removed, time: %d msecs', numRemoved, Date.now() - scriptStart);
+            Logger.log('%d events removed, time: %d msecs', numRemoved, Date.now() - scriptStart);
           }
         }
       });
@@ -331,20 +326,18 @@ function showSettingsDialog() {
 }
 
 // Retrieves settings from storage.
-function getUserSettings(): UserSettings {
+function getUserSettings(): ParsedUserSettings {
   let savedSettings = JSON.parse(PropertiesService.getDocumentProperties().getProperty(Settings.SETTINGS_VERSION));
   if (savedSettings) {
     // The JSON parser won't correctly parse dates, so manually do it
     savedSettings.begin_date = new Date(savedSettings.begin_date);
     savedSettings.end_date = new Date(savedSettings.end_date);
   }
-  Logger.log('in getUserSettings');
-  Logger.log(savedSettings);
   return savedSettings;
 }
 
 // Formats a date for display in the settings dialog, e.g. 2020-3-1.
-function dateString(datestr): string {
+function dateString(datestr: Date): string {
   return `${datestr.getFullYear()}-${datestr.getMonth() + 1}-${datestr.getDate()}`;
 }
 
@@ -367,15 +360,11 @@ function getUserSettingsForForm() {
     result.skip_blank_rows = savedSettings.skip_blank_rows;
     result.all_day_events = savedSettings.all_day_events.toLowerCase();
   }
-  Logger.log('in getUserSettingsForForm');
-  Logger.log(result);
   return result;
 }
 
 // Save user settings entered in modal dialog.
-function saveUserSettings(formValues) {
-  Logger.log('in saveUserSettings');
-  Logger.log(formValues);
+function saveUserSettings(formValues: UserSettings) {
   if (formValues.calendar_id.indexOf('@') === -1) {
     formValues.calendar_id = formValues.calendar_id + '@group.calendar.google.com';
   }
