@@ -1,3 +1,5 @@
+import {EventColor} from '../GenericEvent';
+
 class FakeGuest implements GoogleAppsScript.Calendar.EventGuest {
   constructor(
    public email: string
@@ -27,7 +29,8 @@ export class FakeCalendarEvent implements GoogleAppsScript.Calendar.CalendarEven
     const [id, title, description, location, guests, color, allday, starttime, endtime] =
       params;
     let guestList = guests ? guests.split(',').map((x) => new FakeGuest(x.trim())) : [];
-    return new FakeCalendarEvent(id, title, description, location, guestList, color,
+    let convertedColor = color ? (EventColor[color] + 1).toString() : '';
+    return new FakeCalendarEvent(id, title, description, location, guestList, convertedColor,
       allday, starttime, endtime);
   }
   getId() {

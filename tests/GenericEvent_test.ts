@@ -10,13 +10,13 @@ const DATE4 = new Date('1995-12-20T00:00:00');
 const DATE5 = new Date('1995-12-22T00:00:00');
 
 const EVENT1_VALUES = ['testid1', 'Test Title 1', 'Test Description 1', 'Test Location 1',
-  'guest1@example.com,guest2@example.com', '1', false, DATE1, DATE2];
+  'guest1@example.com,guest2@example.com', 'ORANGE', false, DATE1, DATE2];
 const EVENT2_VALUES = ['testid2', 'Test Title 2', 'Test Description 2', 'Test Location 2',
-  'guest3@example.com,guest4@example.com', '2', false, DATE2, DATE3];
+  'guest3@example.com,guest4@example.com', 'GRAY', false, DATE2, DATE3];
 const EVENT_NOGUESTS_VALUES = ['testid3', 'Test Title 3', 'Test Description 3', 'Test Location 3',
-  '', '3', false, DATE2, DATE3];
+  '', 'MAUVE', false, DATE2, DATE3];
 const EVENT_ALLDAY_VALUES = ['testid4', 'Test Title 4', 'Test Description 4', 'Test Location 4',
-  '', '4', true, DATE4, DATE5];
+  '', '', true, DATE4, DATE5];
 const EVENT_BADDATES_VALUES = ['testid5', 'Test Title 5', 'Test Description 5', 'Test Location 5',
   '', '', false, 'abc', 0]
 
@@ -35,11 +35,13 @@ describe('GenericEvent', () => {
   });
   it('instantiates correctly', () => {
     expect(event1.id).toBe('testid1');
+    expect(event1.color).toBe('6');
   });
 
   describe('fromCalendarEvent', () => {
     it('initantiates correctly with all fields', () => {
       const fakeCalEvent = FakeCalendarEvent.fromArray(EVENT1_VALUES);
+      expect(fakeCalEvent.getColor()).toEqual('6')
       const event1_fromcal = GenericEvent.fromCalendarEvent(fakeCalEvent);
       expect(event1_fromcal).toEqual(event1);
     });

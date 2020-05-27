@@ -2,6 +2,8 @@
 // uncomment and re-comment these lines.
 /*% import {Settings, AllDayValue} from './Settings'; %*/
 
+/*% export %*/ enum EventColor { PALE_BLUE, PALE_GREEN, MAUVE, PALE_RED, YELLOW, ORANGE, CYAN, GRAY, BLUE, GREEN, RED }
+
 /*% export %*/ class GenericEvent {
   constructor(
     public id: string,
@@ -9,7 +11,7 @@
     public description: string,
     public location: string,
     public guests: string,
-    public color: string,
+    public color: string,  // Stored as color number
     public allday: boolean,
     public starttime: Date,
     public endtime: Date
@@ -18,7 +20,8 @@
   static fromArray(params: any[]) {
     const [id, title, description, location, guests, color, allday, starttime, endtime] =
       params;
-    return new GenericEvent(id, title, description, location, guests, color,
+    let convertedColor = color ? (EventColor[color] + 1).toString() : '';
+    return new GenericEvent(id, title, description, location, guests, convertedColor,
       allday, starttime, endtime);
   }
 
@@ -58,6 +61,8 @@
           event[field] = (isNaN(value) || value == 0) ? null : new Date(value);
         } else if (field === 'allday') {
           event[field] = (value === true);
+        } else if (field === 'color') {
+          event[field] = value ? (EventColor[value] + 1).toString() : '';
         } else {
           event[field] = value;
         }
@@ -79,10 +84,13 @@
   toSpreadsheetRow(idxMap: string[], spreadsheetRow: any[]) {
     for (let idx = 0; idx < idxMap.length; idx++) {
       if (idxMap[idx] !== null) {
+        const value = this[idxMap[idx]];
         if (idxMap[idx] === 'allday') {
-          spreadsheetRow[idx] = !!this[idxMap[idx]];
+          spreadsheetRow[idx] = !!value;
+        } else if (idxMap[idx] === 'color') {
+          spreadsheetRow[idx] = value ? EventColor[Number(value) - 1] : '';
         } else {
-          spreadsheetRow[idx] = this[idxMap[idx]];
+          spreadsheetRow[idx] = value;
         }
       }
     }
