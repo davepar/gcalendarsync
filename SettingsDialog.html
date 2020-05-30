@@ -12,10 +12,6 @@
   <body>
     <form id="settingsform">
       <div class="block form-group">
-        <label for="calendar_id">Calendar ID</label>
-        <input type='text' id="calendar_id" name="calendar_id" required/>
-      </div>
-      <div class="block form-group">
         <label for="begin_date">Start date (yyyy-mm-dd)</label>
         <input type='text' id="begin_date" name="begin_date" required
           pattern="\d{4}-\d{1,2}-\d{1,2}"/>
@@ -58,16 +54,11 @@
     </form>
     <script>
     function populateUserSettings(userSettings) {
-      var calendar_id_el = document.getElementById("calendar_id");
-      calendar_id_el.value = userSettings.calendar_id;
       document.getElementById("begin_date").value = userSettings.begin_date;
       document.getElementById("end_date").value = userSettings.end_date;
       document.getElementById("send_email_invites").checked = userSettings.send_email_invites;
       document.getElementById("skip_blank_rows").checked = userSettings.skip_blank_rows;
       document.getElementById(userSettings.all_day_events).checked = true;
-      if (!userSettings.calendar_id) {
-        calendar_id_el.focus();
-      }
     }
     google.script.run.withSuccessHandler(populateUserSettings).getUserSettingsForForm();
     document.querySelector("#settingsform").addEventListener("submit",
@@ -77,7 +68,6 @@
           e.preventDefault();
           // Get form values
           var formValues = {
-            calendar_id: document.getElementById('calendar_id').value,
             begin_date: document.getElementById('begin_date').value,
             end_date: document.getElementById('end_date').value,
             send_email_invites: document.getElementById('send_email_invites').checked,

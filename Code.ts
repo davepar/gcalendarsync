@@ -6,7 +6,7 @@
 
 // These imports are only used for testing. Run pretest and posttest scripts to automatically
 // uncomment and re-comment these lines.
-/*% import {Settings, UserSettings, ParsedUserSettings, AllDayValue} from './Settings'; %*/
+/*% import {Settings, AllDayValue, showSettingsDialog, getUserSettings} from './Settings'; %*/
 /*% import {Util} from './Util'; %*/
 /*% import {EventColor, GenericEvent, GenericEventKey} from './GenericEvent'; %*/
 
@@ -19,369 +19,297 @@ function onOpen() {
     .addToUi();
 }
 
-// Set up formats and hide ID column for empty spreadsheet
-function setUpSheet(sheet: GoogleAppsScript.Spreadsheet.Sheet, fieldKeys: string[], numDataRows: number) {
-  // Date format to use in the spreadsheet. Meaning of letters defined at
-  // https://developers.google.com/sheets/api/guides/formats
-  const dateFormat = 'M/d/yyyy H:mm a/p';
-  const getRangeByFieldName =
-    (fieldName: string, numRows: number) => sheet.getRange(2, fieldKeys.indexOf(fieldName) + 1, numRows);
-  getRangeByFieldName('starttime', 999).setNumberFormat(dateFormat);
-  getRangeByFieldName('endtime', 999).setNumberFormat(dateFormat);
-  let checkboxRule = SpreadsheetApp.newDataValidation().requireCheckbox().build();
-  getRangeByFieldName('allday', numDataRows).setDataValidation(checkboxRule);
-  const colorList = [];
-  for (let enumColor in EventColor) {
-    if (isNaN(parseInt(enumColor, 10))) {
-      colorList.push(enumColor);
-    }
-  }
-  let colorDropdownRule =
-    SpreadsheetApp.newDataValidation().requireValueInList(colorList, true).build();
-  getRangeByFieldName('color', numDataRows).setDataValidation(colorDropdownRule);
-  sheet.hideColumns(fieldKeys.indexOf('id') + 1);
-}
-
-function displayMissingFields(missingFields: GenericEventKey[]) {
-  const reqFieldNames = missingFields.map(x => Util.TITLE_ROW_MAP.get(x)).join(', ');
-  Util.errorAlert('Spreadsheet is missing ' + reqFieldNames + ' columns. See Help for more info.');
-}
-
 // Synchronize from calendar to spreadsheet.
 function syncFromCalendar() {
   let userSettings = getUserSettings();
-  if (!userSettings || !userSettings.calendar_id) {
+  if (!userSettings) {
     showSettingsDialog();
     return;
   }
 
   //Logger.log('Starting sync from calendar');
-  // Get calendar events
-  let calendar = CalendarApp.getCalendarById(userSettings.calendar_id);
-  if (!calendar) {
-    Util.errorAlert('Cannot find calendar. Enter calendar ID in Settings. See Help for more info.');
-    return;
-  }
-  const calEvents = calendar.getEvents(userSettings.begin_date, userSettings.end_date);
-
-  // Get spreadsheet and data
-  const spreadsheet:GoogleAppsScript.Spreadsheet.Spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = spreadsheet.getActiveSheet();
-  let range = sheet.getDataRange();
-  let data = range.getValues();
-  let eventFound = new Array(data.length);
-
-  // Check if spreadsheet is empty and add a title row
-  const titleRowValues = Array.from(Util.TITLE_ROW_MAP.values());
-  const titleRowKeys = Array.from(Util.TITLE_ROW_MAP.keys());
-  if (data.length < 1) {
-    data.push(titleRowValues);
-    range = sheet.getRange(1, 1, data.length, data[0].length);
-    range.setValues(data);
-    setUpSheet(sheet, titleRowKeys, calEvents.length);
-  }
-  if (data.length == 1 && data[0].length == 1 && data[0][0] === '') {
-    data[0] = titleRowValues;
-    range = sheet.getRange(1, 1, data.length, data[0].length);
-    range.setValues(data);
-    setUpSheet(sheet, titleRowKeys, calEvents.length);
-  }
-
-  // Map spreadsheet headers to indices
-  const idxMap = Util.createIdxMap(data[0]);
-  const idIdx = idxMap.indexOf('id');
-
-  // Verify header has all required fields
-  const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
-  let missingFields = Util.missingRequiredFields(idxMap, includeAllDay);
-  if (missingFields.length > 0) {
-    displayMissingFields(missingFields);
-    return;
-  }
-
-  // Array of IDs in the spreadsheet
-  const sheetEventIds = data.slice(1).map(row => row[idIdx]);
-
-  // Loop through calendar events and put them in the spreadsheet data
-  for (let calEvent of calEvents) {
-    const calEventId = calEvent.getId();
-
-    let ridx = sheetEventIds.indexOf(calEventId) + 1;
-    if (ridx < 1) {
-      // Event not found, create it
-      ridx = data.length;
-      let newRow = [];
-      let rowSize = idxMap.length;
-      while (rowSize--) newRow.push('');
-      data.push(newRow);
-    } else {
-      eventFound[ridx] = true;
+  // Loop through all sheets
+  const allSheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  let calendarIdsFound: string[] = [];
+  for (let sheet of allSheets) {
+    const sheetName = sheet.getName();
+    // Get sheet data and pull calendar ID from first row
+    let data = sheet.getDataRange().getValues();
+    if (data.length <= Util.CALENDAR_ID_ROW ||
+      !data[Util.CALENDAR_ID_ROW][0].replace(/\s/g, '').toLowerCase().startsWith('calendarid')) {
+      // Only sync sheets that start with "Calendar ID" in cell A1
+      continue;
     }
-    // Update event in spreadsheet data
-    GenericEvent.fromCalendarEvent(calEvent).toSpreadsheetRow(idxMap, data[ridx]);
-  }
+  
+    // Get calendar events
+    const calendarId = data[Util.CALENDAR_ID_ROW][1];
+    if (calendarIdsFound.indexOf(calendarId) >= 0) {
+      if (Util.errorAlertHalt(`Calendar ID ${calendarId} is in more than one sheet. This can have unpredictable results.`)) {
+        return;
+      }
+    }
+    calendarIdsFound.push(calendarId);
+    let calendar = CalendarApp.getCalendarById(calendarId);
+    if (!calendar) {
+      Util.errorAlert(`Could not find calendar with ID ${calendarId} from sheet ${sheetName}.`);
+      continue;
+    }
+    const calEvents = calendar.getEvents(userSettings.begin_date, userSettings.end_date);
 
-  // Remove any data rows not found in the calendar
-  let rowsDeleted = 0;
-  for (let idx = eventFound.length - 1; idx > 0; idx--) {
-    //event doesn't exists and has an event id
-    if (!eventFound[idx] && sheetEventIds[idx - 1]) {
-      data.splice(idx, 1);
-      rowsDeleted++;
+    // Check if spreadsheet needs a title row added
+    if (data.length <= Util.TITLE_ROW ||
+      (data.length == Util.TITLE_ROW + 1 && data[Util.TITLE_ROW].length == 1 && data[Util.TITLE_ROW][0] === '')) {
+      Util.setUpSheet(sheet, calEvents.length);
+      // Refresh data from first two rows
+      data = sheet.getDataRange().getValues().slice(0, Util.FIRST_DATA_ROW);
+    }
+
+    // Map spreadsheet column titles to indices
+    const idxMap = Util.createIdxMap(data[Util.TITLE_ROW]);
+    const idIdx = idxMap.indexOf('id');
+
+    // Verify title row has all required fields
+    const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
+    let missingFields = Util.missingRequiredFields(idxMap, includeAllDay);
+    if (missingFields.length > 0) {
+      Util.displayMissingFields(missingFields, sheetName);
+      continue;
+    }
+
+    // Get all of the event IDs from the sheet
+    const sheetEventIds = data.map(row => row[idIdx]);
+
+    // Loop through calendar events and update or add to sheet data
+    let eventFound = new Array(data.length);
+    for (let calEvent of calEvents) {
+      const calEventId = calEvent.getId();
+
+      let rowIdx = sheetEventIds.indexOf(calEventId);
+      if (rowIdx < Util.FIRST_DATA_ROW) {
+        // Event not found, create it
+        rowIdx = data.length;
+        let newRow = Array(idxMap.length).fill('');
+        data.push(newRow);
+      } else {
+        eventFound[rowIdx] = true;
+      }
+      // Update event in spreadsheet data
+      GenericEvent.fromCalendarEvent(calEvent).toSpreadsheetRow(idxMap, data[rowIdx]);
+    }
+
+    // Remove any data rows not found in the calendar from the bottom up
+    let rowsDeleted = 0;
+    for (let idx = eventFound.length - 1; idx > Util.TITLE_ROW; idx--) {
+      if (!eventFound[idx] && sheetEventIds[idx]) {
+        data.splice(idx, 1);
+        rowsDeleted++;
+      }
+    }
+
+    // Save spreadsheet changes
+    let range = sheet.getRange(1, 1, data.length, data[Util.TITLE_ROW].length);
+    range.setValues(data);
+    if (rowsDeleted > 0) {
+      sheet.deleteRows(data.length + 1, rowsDeleted);
     }
   }
-
-  // Save spreadsheet changes
-  range = sheet.getRange(1, 1, data.length, data[0].length);
-  range.setValues(data);
-  if (rowsDeleted > 0) {
-    sheet.deleteRows(data.length + 1, rowsDeleted);
+  if (calendarIdsFound.length === 0) {
+    Util.errorAlert('Could not find any calendar IDs in sheets. See Help for setup instructions.');
   }
 }
 
 // Synchronize from spreadsheet to calendar.
 function syncToCalendar() {
   let userSettings = getUserSettings();
-  if (!userSettings || !userSettings.calendar_id) {
+  if (!userSettings) {
     showSettingsDialog();
     return;
   }
 
   //Logger.log('Starting sync to calendar');
   let scriptStart = Date.now();
-  // Get calendar and events
-  let calendar = CalendarApp.getCalendarById(userSettings.calendar_id);
-  if (!calendar) {
-    Util.errorAlert('Cannot find calendar. Enter calendar ID in Settings. See Help for more info.');
-    return;
-  }
-  let calEvents = calendar.getEvents(userSettings.begin_date, userSettings.end_date);
-  let calEventIds = calEvents.map(val => val.getId());
 
-  // Get spreadsheet and data
-  let spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = spreadsheet.getActiveSheet();
-  let range = sheet.getDataRange();
-  let data = range.getValues();
-  if (data.length < 2) {
-    Util.errorAlert('Spreadsheet must have a title row and at least one data row.');
-    return;
-  }
-
-  // Map headers to indices
-  let idxMap = Util.createIdxMap(data[0]);
-  let idIdx = idxMap.indexOf('id');
-  let idRange = range.offset(0, idIdx, data.length, 1);
-  let idData = idRange.getValues()
-
-  // Verify header has all required fields
-  const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
-  let missingFields = Util.missingRequiredFields(idxMap, includeAllDay);
-  if (missingFields.length > 0) {
-    displayMissingFields(missingFields);
-    return;
-  }
-
-  let keysToAdd = Util.missingFields(idxMap);
-
-  // Loop through spreadsheet rows
-  let numAdded = 0;
-  let numUpdates = 0;
-  let eventsAdded = false;
-  for (let ridx = 1; ridx < data.length; ridx++) {
-    let sheetEvent = GenericEvent.fromSpreadsheetRow(data[ridx], idxMap, keysToAdd, userSettings.all_day_events);
-
-    // If enabled, skip rows with blank/invalid start and end times
-    if (userSettings.skip_blank_rows && !(sheetEvent.starttime instanceof Date) &&
-        !(sheetEvent.endtime instanceof Date)) {
+  // Loop through all sheets
+  const allSheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  let calendarIdsFound: string[] = [];
+  for (let sheet of allSheets) {
+    const sheetName = sheet.getName();
+    // Get sheet data and pull calendar ID from first row
+    let range = sheet.getDataRange();
+    let data = range.getValues();
+    if (!data[Util.CALENDAR_ID_ROW][0].replace(/\s/g, '').toLowerCase().startsWith('calendarid')) {
+      // Only sync sheets that have a calendar ID
       continue;
     }
+    if (data.length < Util.FIRST_DATA_ROW + 1) {
+      Util.errorAlert(`Sheet ${sheetName} must have a title row and at least one data row.`);
+      continue;
+    }
+      
+    // Get calendar events
+    const calendarId = data[Util.CALENDAR_ID_ROW][1];
+    if (calendarIdsFound.indexOf(calendarId) >= 0) {
+      if (Util.errorAlertHalt(`Calendar ID ${calendarId} is in more than one sheet. This can have unpredictable results.`)) {
+        return;
+      }
+    }
+    calendarIdsFound.push(calendarId);
+    let calendar = CalendarApp.getCalendarById(calendarId);
+    if (!calendar) {
+      Util.errorAlert(`Could not find calendar with ID ${calendarId} from sheet ${sheetName}.`);
+      continue;
+    }
+    const calEvents = calendar.getEvents(userSettings.begin_date, userSettings.end_date);
+    let calEventIds = calEvents.map(val => val.getId());
 
-    // Do some error checking first
-    if (!sheetEvent.title) {
-      Util.errorAlert('must have title', sheetEvent, ridx);
-      continue;
-    }
-    if (!(sheetEvent.starttime instanceof Date)) {
-      Util.errorAlert('start time must be a date/time', sheetEvent, ridx);
-      continue;
-    }
-    if (!(sheetEvent.endtime instanceof Date)) {
-      Util.errorAlert('end time must be a date/time', sheetEvent, ridx);
-      continue;
-    }
-    if (sheetEvent.endtime < sheetEvent.starttime) {
-      Util.errorAlert('end time must be after start time', sheetEvent, ridx);
-      continue;
-    }
+    // Map column headers to indices
+    let idxMap = Util.createIdxMap(data[Util.TITLE_ROW]);
+    let idIdx = idxMap.indexOf('id');
+    let idRange = range.offset(0, idIdx, data.length, 1);
+    let idData = idRange.getValues()
 
-    // Ignore events outside of the begin/end range desired.
-    if (sheetEvent.starttime > userSettings.end_date) {
+    // Verify title row has all required fields
+    const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
+    let missingFields = Util.missingRequiredFields(idxMap, includeAllDay);
+    if (missingFields.length > 0) {
+      Util.displayMissingFields(missingFields, sheetName);
       continue;
     }
-    if (sheetEvent.endtime < userSettings.begin_date) {
-      continue;
-    }
+    let keysToAdd = Util.missingFields(idxMap);
 
-    // Determine if spreadsheet event is already in calendar and matches
-    let addEvent = true;
-    if (sheetEvent.id) {
-      let eventIdx = calEventIds.indexOf(sheetEvent.id);
-      if (eventIdx >= 0) {
-        calEventIds[eventIdx] = null;  // Prevents removing event below
-        addEvent = false;
-        let calEvent = calEvents[eventIdx];
-        let calGenericEvent = GenericEvent.fromCalendarEvent(calEvent);
-        let eventDiffs = calGenericEvent.eventDifferences(sheetEvent);
-        if (eventDiffs > 0) {
-          // When there are only 1 or 2 event differences, it's quicker to
-          // update the event. For more event diffs, delete and re-add the event.
-          if (eventDiffs < 3) {
-            numUpdates += calGenericEvent.updateEvent(sheetEvent, calEvent);
-          } else {
-            addEvent = true;
-            calEventIds[eventIdx] = sheetEvent.id;
+    // Loop through sheet rows
+    let numAdded = 0;
+    let numUpdates = 0;
+    let eventsAdded = false;
+    for (let ridx = Util.FIRST_DATA_ROW; ridx < data.length; ridx++) {
+      let sheetEvent = GenericEvent.fromSpreadsheetRow(data[ridx], idxMap, keysToAdd, userSettings.all_day_events);
+
+      // If enabled, skip rows with blank/invalid start and end times
+      if (userSettings.skip_blank_rows && !(sheetEvent.starttime instanceof Date) &&
+          !(sheetEvent.endtime instanceof Date)) {
+        continue;
+      }
+
+      // Do some error checking first
+      if (!sheetEvent.title) {
+        Util.errorAlert('must have title', sheetEvent, ridx);
+        continue;
+      }
+      if (!(sheetEvent.starttime instanceof Date)) {
+        Util.errorAlert('start time must be a date/time', sheetEvent, ridx);
+        continue;
+      }
+      if (!(sheetEvent.endtime instanceof Date)) {
+        Util.errorAlert('end time must be a date/time', sheetEvent, ridx);
+        continue;
+      }
+      if (sheetEvent.endtime < sheetEvent.starttime) {
+        Util.errorAlert('end time must be after start time', sheetEvent, ridx);
+        continue;
+      }
+
+      // Ignore events outside of the begin/end range desired.
+      if (sheetEvent.starttime > userSettings.end_date) {
+        continue;
+      }
+      if (sheetEvent.endtime < userSettings.begin_date) {
+        continue;
+      }
+
+      // Determine if spreadsheet event is already in calendar and matches
+      let addEvent = true;
+      if (sheetEvent.id) {
+        let eventIdx = calEventIds.indexOf(sheetEvent.id);
+        if (eventIdx >= 0) {
+          calEventIds[eventIdx] = null;  // Prevents removing event below
+          addEvent = false;
+          let calEvent = calEvents[eventIdx];
+          let calGenericEvent = GenericEvent.fromCalendarEvent(calEvent);
+          let eventDiffs = calGenericEvent.eventDifferences(sheetEvent);
+          if (eventDiffs > 0) {
+            // When there are only 1 or 2 event differences, it's quicker to
+            // update the event. For more event diffs, delete and re-add the event.
+            if (eventDiffs < 3) {
+              numUpdates += calGenericEvent.updateEvent(sheetEvent, calEvent);
+            } else {
+              addEvent = true;
+              calEventIds[eventIdx] = sheetEvent.id;
+            }
           }
         }
       }
-    }
-    //Logger.log('%d updates, time: %d msecs', numUpdates, Date.now() - scriptStart);
+      //Logger.log(`${sheetEvent.title} ${numUpdates} updates, time: ${Date.now() - scriptStart} msecs`);
 
-    if (addEvent) {
-      const eventOptions = {
-        description: sheetEvent.description,
-        location: sheetEvent.location,
-        guests: sheetEvent.guests,
-        sendInvites: userSettings.send_email_invites,
-      }
-      let newEvent: GoogleAppsScript.Calendar.CalendarEvent;
-      if (sheetEvent.allday) {
-        if (sheetEvent.endtime.getHours() === 23 && sheetEvent.endtime.getMinutes() === 59) {
-          sheetEvent.endtime.setSeconds(sheetEvent.endtime.getSeconds() + 1);
+      if (addEvent) {
+        const eventOptions = {
+          description: sheetEvent.description,
+          location: sheetEvent.location,
+          guests: sheetEvent.guests,
+          sendInvites: userSettings.send_email_invites,
         }
-        newEvent = calendar.createAllDayEvent(sheetEvent.title, sheetEvent.starttime, sheetEvent.endtime, eventOptions);
-      } else {
-        newEvent = calendar.createEvent(sheetEvent.title, sheetEvent.starttime, sheetEvent.endtime, eventOptions);
-      }
-      // Put event ID back into spreadsheet
-      idData[ridx][0] = newEvent.getId();
-      eventsAdded = true;
+        let newEvent: GoogleAppsScript.Calendar.CalendarEvent;
+        if (sheetEvent.allday) {
+          if (sheetEvent.endtime.getHours() === 23 && sheetEvent.endtime.getMinutes() === 59) {
+            sheetEvent.endtime.setSeconds(sheetEvent.endtime.getSeconds() + 1);
+          }
+          newEvent = calendar.createAllDayEvent(sheetEvent.title, sheetEvent.starttime, sheetEvent.endtime, eventOptions);
+        } else {
+          newEvent = calendar.createEvent(sheetEvent.title, sheetEvent.starttime, sheetEvent.endtime, eventOptions);
+        }
+        // Put event ID back into spreadsheet
+        idData[ridx][0] = newEvent.getId();
+        eventsAdded = true;
 
-      // Set event color
-      const numericColor = parseInt(sheetEvent.color);
-      if (numericColor > 0 && numericColor < 12) {
-        newEvent.setColor(sheetEvent.color);
-      }
+        // Set event color
+        const numericColor = parseInt(sheetEvent.color);
+        if (numericColor > 0 && numericColor < 12) {
+          newEvent.setColor(sheetEvent.color);
+        }
 
-      // Throttle updates.
-      numAdded++;
-      Utilities.sleep(Settings.THROTTLE_SLEEP_TIME);
-      if (numAdded % 10 === 0) {
-        //Logger.log('%d events added, time: %d msecs', numAdded, Date.now() - scriptStart);
+        // Throttle updates.
+        numAdded++;
+        Utilities.sleep(Settings.THROTTLE_SLEEP_TIME);
+        if (numAdded % 10 === 0) {
+          //Logger.log('%d events added, time: %d msecs', numAdded, Date.now() - scriptStart);
+        }
+      }
+      // If the script is getting close to timing out, save the event IDs added so far to avoid lots
+      // of duplicate events.
+      if ((Date.now() - scriptStart) > Settings.MAX_RUN_TIME) {
+        idRange.setValues(idData);
       }
     }
-    // If the script is getting close to timing out, save the event IDs added so far to avoid lots
-    // of duplicate events.
-    if ((Date.now() - scriptStart) > Settings.MAX_RUN_TIME) {
+
+    // Save spreadsheet changes
+    if (eventsAdded) {
       idRange.setValues(idData);
     }
-  }
 
-  // Save spreadsheet changes
-  if (eventsAdded) {
-    idRange.setValues(idData);
-  }
-
-  // Remove any calendar events not found in the spreadsheet
-  let numToRemove = calEventIds.reduce((prevVal, curVal) => {
-    if (curVal !== null) {
-      prevVal++;
-    }
-    return prevVal;
-  }, 0);
-  if (numToRemove > 0) {
-    const ui = SpreadsheetApp.getUi();
-    const response = ui.alert('Delete ' + numToRemove + ' calendar event(s) not found in spreadsheet?',
-          ui.ButtonSet.YES_NO);
-    if (response == ui.Button.YES) {
-      let numRemoved = 0;
-      calEventIds.forEach((id, idx) => {
-        if (id != null) {
-          calEvents[idx].deleteEvent();
-          Utilities.sleep(Settings.THROTTLE_SLEEP_TIME);
-          numRemoved++;
-          if (numRemoved % 10 === 0) {
-            //Logger.log('%d events removed, time: %d msecs', numRemoved, Date.now() - scriptStart);
+    // Remove any calendar events not found in the spreadsheet
+    const countNonNull = (prevVal: number, curVal: string) => curVal === null ? prevVal : prevVal + 1;
+    const numToRemove = calEventIds.reduce(countNonNull, 0);
+    if (numToRemove > 0) {
+      const ui = SpreadsheetApp.getUi();
+      const response = ui.alert(`Delete ${numToRemove} calendar event(s) not found in spreadsheet?`,
+        ui.ButtonSet.YES_NO);
+      if (response == ui.Button.YES) {
+        let numRemoved = 0;
+        calEventIds.forEach((id, idx) => {
+          if (id != null) {
+            calEvents[idx].deleteEvent();
+            Utilities.sleep(Settings.THROTTLE_SLEEP_TIME);
+            numRemoved++;
+            // if (numRemoved % 10 === 0) {
+            //   Logger.log('%d events removed, time: %d msecs', numRemoved, Date.now() - scriptStart);
+            // }
           }
-        }
-      });
+        });
+      }
     }
   }
-}
-
-// Show modal dialog for sync settings.
-function showSettingsDialog() {
-  const html = HtmlService.createHtmlOutputFromFile('SettingsDialog');
-  SpreadsheetApp.getUi().showModalDialog(html, 'Settings');
-}
-
-// Retrieves settings from storage.
-function getUserSettings(): ParsedUserSettings {
-  let savedSettings = JSON.parse(PropertiesService.getDocumentProperties().getProperty(Settings.SETTINGS_VERSION));
-  if (savedSettings) {
-    // The JSON parser won't correctly parse dates, so manually do it
-    savedSettings.begin_date = new Date(savedSettings.begin_date);
-    savedSettings.end_date = new Date(savedSettings.end_date);
+  if (calendarIdsFound.length === 0) {
+    Util.errorAlert('Could not find any calendar IDs in sheets. See Help for setup instructions.');
   }
-  return savedSettings;
-}
-
-// Formats a date for display in the settings dialog, e.g. 2020-3-1.
-function dateString(datestr: Date): string {
-  return `${datestr.getFullYear()}-${datestr.getMonth() + 1}-${datestr.getDate()}`;
-}
-
-// Called by HTML script to get saved settings in a format compatible with the form.
-function getUserSettingsForForm() {
-  const savedSettings = getUserSettings();
-  let result = {
-    calendar_id: '',
-    begin_date: '1970-1-1',
-    end_date: '2500-1-1',
-    send_email_invites: false,
-    skip_blank_rows: false,
-    all_day_events: AllDayValue.never_all_day.toLowerCase(),
-  }
-  if (savedSettings) {
-    result.calendar_id = savedSettings.calendar_id || '';
-    result.begin_date = dateString(savedSettings.begin_date);
-    result.end_date = dateString(savedSettings.end_date);
-    result.send_email_invites = savedSettings.send_email_invites;
-    result.skip_blank_rows = savedSettings.skip_blank_rows;
-    result.all_day_events = savedSettings.all_day_events.toLowerCase();
-  }
-  return result;
-}
-
-// Save user settings entered in modal dialog.
-function saveUserSettings(formValues: UserSettings) {
-  if (formValues.calendar_id.indexOf('@') === -1) {
-    formValues.calendar_id = formValues.calendar_id + '@group.calendar.google.com';
-  }
-  // Check that dates are valid.
-  if (!Util.isValidDate(formValues.begin_date)) {
-    throw('Invalid start date');
-  }
-  if (!Util.isValidDate(formValues.end_date)) {
-    throw('Invalid end date');
-  }
-  PropertiesService.getDocumentProperties().setProperty(Settings.SETTINGS_VERSION, JSON.stringify(formValues));
-  return true;
-}
-
-// This can be used during debugging from the Script Editor to remove all user settings.
-function killUserSettings() {
-  PropertiesService.getDocumentProperties().deleteAllProperties();
 }
 
 // Simple function to test syntax of this script, since otherwise it's not exercised until the
