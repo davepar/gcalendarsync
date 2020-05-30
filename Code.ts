@@ -55,7 +55,7 @@ function syncFromCalendar() {
     return;
   }
 
-  Logger.log('Starting sync from calendar');
+  //Logger.log('Starting sync from calendar');
   // Get calendar events
   let calendar = CalendarApp.getCalendarById(userSettings.calendar_id);
   if (!calendar) {
@@ -147,7 +147,7 @@ function syncToCalendar() {
     return;
   }
 
-  Logger.log('Starting sync to calendar');
+  //Logger.log('Starting sync to calendar');
   let scriptStart = Date.now();
   // Get calendar and events
   let calendar = CalendarApp.getCalendarById(userSettings.calendar_id);
@@ -245,7 +245,7 @@ function syncToCalendar() {
         }
       }
     }
-    Logger.log('%d updates, time: %d msecs', numUpdates, Date.now() - scriptStart);
+    //Logger.log('%d updates, time: %d msecs', numUpdates, Date.now() - scriptStart);
 
     if (addEvent) {
       const eventOptions = {
@@ -277,7 +277,7 @@ function syncToCalendar() {
       numAdded++;
       Utilities.sleep(Settings.THROTTLE_SLEEP_TIME);
       if (numAdded % 10 === 0) {
-        Logger.log('%d events added, time: %d msecs', numAdded, Date.now() - scriptStart);
+        //Logger.log('%d events added, time: %d msecs', numAdded, Date.now() - scriptStart);
       }
     }
     // If the script is getting close to timing out, save the event IDs added so far to avoid lots
@@ -311,7 +311,7 @@ function syncToCalendar() {
           Utilities.sleep(Settings.THROTTLE_SLEEP_TIME);
           numRemoved++;
           if (numRemoved % 10 === 0) {
-            Logger.log('%d events removed, time: %d msecs', numRemoved, Date.now() - scriptStart);
+            //Logger.log('%d events removed, time: %d msecs', numRemoved, Date.now() - scriptStart);
           }
         }
       });
