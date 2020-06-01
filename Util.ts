@@ -115,4 +115,14 @@ const TITLE_ROW_MAP: Map<GenericEventKey, string> = new Map([
   static isValidDate(d: string) {
     return isNaN(Date.parse(d)) === false;
   }
+  
+  static generateUniqueId(id: string, startTime: string){
+  	const dateFormat = "yyyyMMddHHmmss";
+    if(Util.isValidDate(startTime)){
+      return Utilities.formatDate(startTime, "GMT", dateFormat) + id
+    }else {
+      return id
+    }
+  }
+  
 }

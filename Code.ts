@@ -67,6 +67,7 @@ function syncFromCalendar() {
     // Map spreadsheet column titles to indices
     const idxMap = Util.createIdxMap(data[Util.TITLE_ROW]);
     const idIdx = idxMap.indexOf('id');
+    const startTimeIdx = idxMap.indexOf('starttime');
 
     // Verify title row has all required fields
     const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
@@ -77,14 +78,14 @@ function syncFromCalendar() {
     }
 
     // Get all of the event IDs from the sheet
-    const sheetEventIds = data.map(row => row[idIdx]);
+    const sheetEventIds = data.map(row => Util.generateUniqueId(row[idIdx],row[startTimeIdx]));
 
     // Loop through calendar events and update or add to sheet data
     let eventFound = new Array(data.length);
     for (let calEvent of calEvents) {
       const calEventId = calEvent.getId();
-
-      let rowIdx = sheetEventIds.indexOf(calEventId);
+	  const calEventStartTime = calEvent.getStartTime();
+      let rowIdx = sheetEventIds.indexOf(Util.generateUniqueId(calEventId,calEventStartTime));
       if (rowIdx < Util.FIRST_DATA_ROW) {
         // Event not found, create it
         rowIdx = data.length;
