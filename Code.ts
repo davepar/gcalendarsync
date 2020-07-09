@@ -10,13 +10,18 @@
 /*% import {Util} from './Util'; %*/
 /*% import {EventColor, GenericEvent, GenericEventKey} from './GenericEvent'; %*/
 
-// Create the add-on menu.
+// Create the add-on menu when a doc is opened.
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('GCalendar Sync')
     .addItem('Update from Calendar', 'syncFromCalendar')
     .addItem('Update to Calendar', 'syncToCalendar')
     .addItem('Settings', 'showSettingsDialog')
     .addToUi();
+}
+
+// Create the menu when this add-on is installed.
+function onInstall() {
+  onOpen();
 }
 
 // Synchronize from calendar to spreadsheet.
