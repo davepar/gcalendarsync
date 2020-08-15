@@ -4,7 +4,9 @@
   "description": "Google Apps Script for syncing a calendar with a sheet.",
   "main": "gcalendarsync.js",
   "scripts": {
-    "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json"
+    "pretest": "./pretest",
+    "posttest": "./posttest",
+    "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json || :"
   },
   "repository": {
     "type": "git",
