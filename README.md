@@ -1,12 +1,8 @@
 # GCalendar Sync
 
-**Update:** After 3 months of re-organizing and cleaning up the script, it's now in the process
-of being approved for the GSuite Marketplace. Installing it from there will be much easier,
-but isn't available yet (as of May 26, 2020). Until then you can install the older version of the
-script located in the [priorversion](./priorversion) directory.
-
-A Google Sheet Marketplace add-on for synchronizing events with Google Calendar. Instructions are located
-on the [website](http://www.ballardsoftwarefoundry.com/gcalendarsync.html) for the add on.
+A Google Sheet add-on for synchronizing events with Google Calendar.
+[See the website](http://www.ballardsoftwarefoundry.com/gcalendarsync.html) for full instructions. The add-on is
+in the [G Suite Marketplace](https://gsuite.google.com/marketplace/app/gcalendar_sync/831559814916).
 
 ## Contributing
 
