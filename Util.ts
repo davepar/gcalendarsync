@@ -92,8 +92,8 @@ const TITLE_ROW_MAP: Map<GenericEventKey, string> = new Map([
   }
 
   static displayMissingFields(missingFields: GenericEventKey[], sheetName: string) {
-    const reqFieldNames = missingFields.map(x => TITLE_ROW_MAP.get(x)).join(', ');
-    Util.errorAlert(`Sheet ${sheetName} is missing ${reqFieldNames} columns. See Help for setup instructions.`);
+    const reqFieldNames = missingFields.map(x => `"${TITLE_ROW_MAP.get(x)}"`).join(', ');
+    Util.errorAlert(`Sheet "${sheetName}" is missing ${reqFieldNames} columns. See Help for setup instructions.`);
   }
   
   // Display error alert

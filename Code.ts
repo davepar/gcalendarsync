@@ -49,14 +49,14 @@ function syncFromCalendar() {
     // Get calendar events
     const calendarId = data[Util.CALENDAR_ID_ROW][1];
     if (calendarIdsFound.indexOf(calendarId) >= 0) {
-      if (Util.errorAlertHalt(`Calendar ID ${calendarId} is in more than one sheet. This can have unpredictable results.`)) {
+      if (Util.errorAlertHalt(`Calendar ID "${calendarId}" is in more than one sheet. This can have unpredictable results.`)) {
         return;
       }
     }
     calendarIdsFound.push(calendarId);
     let calendar = CalendarApp.getCalendarById(calendarId);
     if (!calendar) {
-      Util.errorAlert(`Could not find calendar with ID ${calendarId} from sheet ${sheetName}.`);
+      Util.errorAlert(`Could not find calendar with ID "${calendarId}" from sheet "${sheetName}".`);
       continue;
     }
     const calEvents = calendar.getEvents(userSettings.begin_date, userSettings.end_date);
@@ -71,7 +71,6 @@ function syncFromCalendar() {
 
     // Map spreadsheet column titles to indices
     const idxMap = Util.createIdxMap(data[Util.TITLE_ROW]);
-    const idIdx = idxMap.indexOf('id');
 
     // Verify title row has all required fields
     const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
@@ -82,6 +81,7 @@ function syncFromCalendar() {
     }
 
     // Get all of the event IDs from the sheet
+    const idIdx = idxMap.indexOf('id');
     const sheetEventIds = data.map(row => row[idIdx]);
 
     // Loop through calendar events and update or add to sheet data
@@ -147,21 +147,21 @@ function syncToCalendar() {
       continue;
     }
     if (data.length < Util.FIRST_DATA_ROW + 1) {
-      Util.errorAlert(`Sheet ${sheetName} must have a title row and at least one data row.`);
+      Util.errorAlert(`Sheet "${sheetName}" must have a title row and at least one data row.`);
       continue;
     }
       
     // Get calendar events
     const calendarId = data[Util.CALENDAR_ID_ROW][1];
     if (calendarIdsFound.indexOf(calendarId) >= 0) {
-      if (Util.errorAlertHalt(`Calendar ID ${calendarId} is in more than one sheet. This can have unpredictable results.`)) {
+      if (Util.errorAlertHalt(`Calendar ID "${calendarId}" is in more than one sheet. This can have unpredictable results.`)) {
         return;
       }
     }
     calendarIdsFound.push(calendarId);
     let calendar = CalendarApp.getCalendarById(calendarId);
     if (!calendar) {
-      Util.errorAlert(`Could not find calendar with ID ${calendarId} from sheet ${sheetName}.`);
+      Util.errorAlert(`Could not find calendar with ID "${calendarId}" from sheet "${sheetName}".`);
       continue;
     }
     const calEvents = calendar.getEvents(userSettings.begin_date, userSettings.end_date);
@@ -169,9 +169,6 @@ function syncToCalendar() {
 
     // Map column headers to indices
     let idxMap = Util.createIdxMap(data[Util.TITLE_ROW]);
-    let idIdx = idxMap.indexOf('id');
-    let idRange = range.offset(0, idIdx, data.length, 1);
-    let idData = idRange.getValues()
 
     // Verify title row has all required fields
     const includeAllDay = userSettings.all_day_events === AllDayValue.use_column;
@@ -181,6 +178,11 @@ function syncToCalendar() {
       continue;
     }
     let keysToAdd = Util.missingFields(idxMap);
+
+    // Get calendar IDs
+    let idIdx = idxMap.indexOf('id');
+    let idRange = range.offset(0, idIdx, data.length, 1);
+    let idData = idRange.getValues()
 
     // Loop through sheet rows
     let numAdded = 0;
