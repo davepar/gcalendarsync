@@ -10,8 +10,24 @@
 /*% import {Util} from './Util'; %*/
 /*% import {EventColor, GenericEvent, GenericEventKey} from './GenericEvent'; %*/
 
+// Check that the user authorized permissions for the add-on. When the add-on is installed by somebody
+// and used in a shared doc, for everybody else the add-on will be only "enabled" but not intalled.
+// They must visit the auth URL to add the permissions.
+function checkAuth(authMode: GoogleAppsScript.Script.AuthMode) {
+  const authInfo = ScriptApp.getAuthorizationInfo(authMode);
+  if (authInfo.getAuthorizationStatus() === ScriptApp.AuthorizationStatus.REQUIRED) {
+    const url = authInfo.getAuthorizationUrl();
+    Util.errorAlert(`Visit: ${url}\n to authorize the permissions needed for GCalendar Sync. Then reload this sheet.`)
+    return false;
+  }
+  return true;
+}
+
 // Create the add-on menu when a doc is opened.
 function onOpen() {
+  if (!checkAuth(ScriptApp.AuthMode.LIMITED)) {
+    return;
+  }
   SpreadsheetApp.getUi().createMenu('GCalendar Sync')
     .addItem('Update from Calendar', 'syncFromCalendar')
     .addItem('Update to Calendar', 'syncToCalendar')
@@ -26,6 +42,10 @@ function onInstall() {
 
 // Synchronize from calendar to spreadsheet.
 function syncFromCalendar() {
+  if (!checkAuth(ScriptApp.AuthMode.FULL)) {
+    return;
+  }
+
   let userSettings = getUserSettings();
   if (!userSettings) {
     showSettingsDialog();
@@ -125,6 +145,10 @@ function syncFromCalendar() {
 
 // Synchronize from spreadsheet to calendar.
 function syncToCalendar() {
+  if (!checkAuth(ScriptApp.AuthMode.FULL)) {
+    return;
+  }
+
   let userSettings = getUserSettings();
   if (!userSettings) {
     showSettingsDialog();
