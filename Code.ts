@@ -188,6 +188,7 @@ function syncToCalendar() {
       Util.errorAlert(`Could not find calendar with ID "${calendarId}" from sheet "${sheetName}".`);
       continue;
     }
+    const calTimeZone = calendar.getTimeZone();
     const calEvents = calendar.getEvents(userSettings.begin_date, userSettings.end_date);
     let calEventIds = calEvents.map(val => val.getId());
 
@@ -213,7 +214,8 @@ function syncToCalendar() {
     let numUpdates = 0;
     let eventsAdded = false;
     for (let ridx = Util.FIRST_DATA_ROW; ridx < data.length; ridx++) {
-      let sheetEvent = GenericEvent.fromSpreadsheetRow(data[ridx], idxMap, keysToAdd, userSettings.all_day_events);
+      let sheetEvent = GenericEvent.fromSpreadsheetRow(data[ridx], idxMap, keysToAdd,
+          userSettings.all_day_events, calTimeZone);
 
       // If enabled, skip rows with blank/invalid start and end times
       if (userSettings.skip_blank_rows && !(sheetEvent.starttime instanceof Date) &&

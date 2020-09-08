@@ -28,12 +28,16 @@ const IDX_MAP_NO_GUESTS = Util.createIdxMap(['Id', 'Title', 'Description', 'Loca
   'Start Time', 'End Time']);
 
 describe('GenericEvent', () => {
-  let event1: GenericEvent, event2: GenericEvent, event_noguests: GenericEvent, event_allday: GenericEvent;
+  let event1: GenericEvent, event2: GenericEvent, event_noguests: GenericEvent, event_allday: GenericEvent,
+      event_allday_plusoneday: GenericEvent;
   beforeAll(() => {
     event1 = GenericEvent.fromArray(EVENT1_VALUES);
     event2 = GenericEvent.fromArray(EVENT2_VALUES);
     event_noguests = GenericEvent.fromArray(EVENT_NOGUESTS_VALUES);
     event_allday = GenericEvent.fromArray(EVENT_ALLDAY_VALUES);
+    const plus_one_day = Object.assign([], EVENT_ALLDAY_VALUES)
+    plus_one_day[8] = GenericEvent.convertToPacificTimeZone(plus_one_day[8], 'America/Los_Angeles', 1)
+    event_allday_plusoneday = GenericEvent.fromArray(plus_one_day);
   });
   it('instantiates correctly', () => {
     expect(event1.id).toBe('testid1');
@@ -62,7 +66,7 @@ describe('GenericEvent', () => {
     });
     it('instantiates all day event correctly', () => {
       const event_allday_fromsheet = GenericEvent.fromSpreadsheetRow(EVENT_ALLDAY_VALUES, IDX_MAP, [], AllDayValue.use_column);
-      expect(event_allday_fromsheet).toEqual(event_allday);
+      expect(event_allday_fromsheet).toEqual(event_allday_plusoneday);
     });
     it('instantiates correctly with a blank field added later', () => {
       const event_noguests_fromsheet = GenericEvent.fromSpreadsheetRow(

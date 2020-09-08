@@ -21,7 +21,7 @@
   ) {}
 
   static fromArray(params: any[]) {
-    const [id, title, description, location, guests, color, allday, starttime, endtime] =
+    let [id, title, description, location, guests, color, allday, starttime, endtime] =
       params;
     let convertedColor = color ? (EventColor[color] + 1).toString() : '';
     return new GenericEvent(id, title, description, location, guests, convertedColor,
@@ -35,8 +35,8 @@
     if (allday) {
       starttime = calEvent.getAllDayStartDate();
       endtime = calEvent.getAllDayEndDate();
-      if (endtime.getHours() === 0 && endtime.getMinutes() === 0) {
-        endtime.setSeconds(endtime.getSeconds() - 1);
+      if (endtime.getHours() === 0 && endtime.getMinutes() === 0 && endtime.getSeconds() === 0) {
+        endtime.setDate(endtime.getDate() - 1);
       }
     } else {
       starttime = calEvent.getStartTime();
@@ -56,12 +56,12 @@
 
   // Convert a spreadsheet row to an instance of this class.
   static fromSpreadsheetRow(row: any[], idxMap: GenericEventKey[], keysToAdd: string[],
-      all_day_events: AllDayValue) {
+      all_day_events: AllDayValue, timeZone = 'America/Los_Angeles') {
     const eventObject = row.reduce((event, value, idx) => {
       const field = idxMap[idx];
       if (field != null) {
         if (field === 'starttime' || field === 'endtime') {
-          event[field] = (isNaN(value) || value == 0) ? null : new Date(value);
+          event[field] = (isNaN(value) || value == 0) ? null : value;
         } else if (field === 'allday') {
           event[field] = (value === true);
         } else if (field === 'color') {
@@ -85,6 +85,13 @@
     if (all_day_events !== AllDayValue.use_column) {
       allday = (all_day_events === AllDayValue.always_all_day);
     }
+    // Adjust allday events to correct time zone and add 1 day to end time
+    if (allday) {
+      starttime = GenericEvent.convertToPacificTimeZone(starttime, timeZone);
+      if (endtime) {
+        endtime = GenericEvent.convertToPacificTimeZone(endtime, timeZone, 1);
+      }
+    }
     return new GenericEvent(id, title, description, location, guests, color, allday,
       starttime, endtime);
   }
@@ -92,11 +99,15 @@
   toSpreadsheetRow(idxMap: GenericEventKey[], spreadsheetRow: any[]) {
     for (let idx = 0; idx < idxMap.length; idx++) {
       if (idxMap[idx] !== null) {
-        const value = this[idxMap[idx]] as any;
-        if (idxMap[idx] === 'allday') {
+        const label = idxMap[idx];
+        const value = this[label] as any;
+        if (label === 'allday') {
           spreadsheetRow[idx] = !!value;
-        } else if (idxMap[idx] === 'color') {
+        } else if (label === 'color') {
           spreadsheetRow[idx] = value ? EventColor[Number(value) - 1] : '';
+        } else if (this.allday && (label === 'starttime' || label === 'endtime')) {
+          // Convert to a string to get around time zone issues
+          spreadsheetRow[idx] = value.toLocaleDateString('en-US');
         } else {
           spreadsheetRow[idx] = value;
         }
@@ -131,9 +142,6 @@
     if (this.starttime.toString() !== sheetEvent.starttime.toString() ||
         this.endtime.toString() !== sheetEvent.endtime.toString() || isAllDayChanged) {
       if (sheetEvent.allday) {
-        if (sheetEvent.endtime.getHours() === 23 && sheetEvent.endtime.getMinutes() === 59) {
-          sheetEvent.endtime.setSeconds(sheetEvent.endtime.getSeconds() + 1);
-        }
         calEvent.setAllDayDates(sheetEvent.starttime, sheetEvent.endtime);
       } else {
         calEvent.setTime(sheetEvent.starttime, sheetEvent.endtime);
@@ -187,6 +195,14 @@
     // Throttle updates.
     Utilities.sleep(Settings.THROTTLE_SLEEP_TIME * numChanges);
     return numChanges;
+  }
+
+  // AppScripts seem to always run in Pacific time. This function will convert
+  // a date to whatever time zone the script is running in.
+  static convertToPacificTimeZone(d: Date, timeZone: string, daydelta = 0) {
+    const adjDate = d.toLocaleDateString('en-US', {timeZone});
+    let [month, day, year] = adjDate.split('/').map(x => parseInt(x));
+    return new Date(year, month - 1, day + daydelta)
   }
 
 } // GenericEvent
