@@ -27,6 +27,9 @@ const IDX_MAP = Util.createIdxMap(['Id', 'Title', 'Description', 'Location', 'Gu
 const IDX_MAP_NO_GUESTS = Util.createIdxMap(['Id', 'Title', 'Description', 'Location', 'Color', 'All Day',
   'Start Time', 'End Time']);
 
+const PACIFIC_TZ = 'America/Los_Angeles';
+
+
 describe('GenericEvent', () => {
   let event1: GenericEvent, event2: GenericEvent, event_noguests: GenericEvent, event_allday: GenericEvent,
       event_allday_plusoneday: GenericEvent;
@@ -36,7 +39,7 @@ describe('GenericEvent', () => {
     event_noguests = GenericEvent.fromArray(EVENT_NOGUESTS_VALUES);
     event_allday = GenericEvent.fromArray(EVENT_ALLDAY_VALUES);
     const plus_one_day = Object.assign([], EVENT_ALLDAY_VALUES)
-    plus_one_day[8] = GenericEvent.convertToPacificTimeZone(plus_one_day[8], 'America/Los_Angeles', 1)
+    plus_one_day[8] = GenericEvent.convertToScriptTimeZone(plus_one_day[8], PACIFIC_TZ, 1)
     event_allday_plusoneday = GenericEvent.fromArray(plus_one_day);
   });
   it('instantiates correctly', () => {
@@ -110,5 +113,18 @@ describe('GenericEvent', () => {
     it('sets diffs to 1 when there are guests', () => {
       expect(event1.eventDifferences(event2)).toBe(1);
     });
+  });
+
+  describe('convertToScriptTimeZone', () => {
+    it('handles non-date', () => {
+      expect(GenericEvent.convertToScriptTimeZone('foo' as any, PACIFIC_TZ)).toBe(null);
+    })
+    it('returns date', () => {
+      expect(GenericEvent.convertToScriptTimeZone(new Date(2020, 11, 10, 9, 8, 7), PACIFIC_TZ)).toEqual(new Date(2020, 11, 10));
+    })
+    it('returns date - 1', () => {
+      // Remember month is zero-index
+      expect(GenericEvent.convertToScriptTimeZone(new Date(2020, 11, 10, 9, 8, 7), PACIFIC_TZ, -10)).toEqual(new Date(2020, 10, 30));
+    })
   });
 });
