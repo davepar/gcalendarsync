@@ -1,5 +1,5 @@
-import {Util} from "../Util";
-import {GenericEventKey} from '../GenericEvent';
+import { Util } from "../Util";
+import { GenericEventKey } from '../GenericEvent';
 
 const DATE1 = new Date('1995-12-17T03:24:00');
 const FAKE_IDX_MAP: GenericEventKey[] = ['id', null, 'title', 'description', 'color'];

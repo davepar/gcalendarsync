@@ -1,18 +1,18 @@
-import {EventColor} from '../GenericEvent';
+import { EventColor } from '../GenericEvent';
 
 class FakeGuest implements GoogleAppsScript.Calendar.EventGuest {
   constructor(
-   public email: string
-  ) {}
+    public email: string
+  ) { }
   getEmail() {
-   return this.email;
+    return this.email;
   }
   getAdditionalGuests(): number { throw "not implemented"; };
   getGuestStatus(): GoogleAppsScript.Calendar.GuestStatus { throw "not implemented"; };
   getName(): string { throw "not implemented"; };
   getStatus(): string { throw "not implemented"; };
 }
-  
+
 export class FakeCalendarEvent implements GoogleAppsScript.Calendar.CalendarEvent {
   constructor(
     public id: string,
@@ -24,7 +24,7 @@ export class FakeCalendarEvent implements GoogleAppsScript.Calendar.CalendarEven
     public allday: boolean,
     public starttime: Date,
     public endtime: Date
-  ) {}
+  ) { }
   static fromArray(params: any[]) {
     const [id, title, description, location, guests, color, allday, starttime, endtime] =
       params;

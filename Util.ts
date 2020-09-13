@@ -57,7 +57,7 @@ const TITLE_ROW_MAP: Map<GenericEventKey, string> = new Map([
   }
 
   // Creates a mapping array between spreadsheet column and event field name
-  static createIdxMap(row:any[]): GenericEventKey[] {
+  static createIdxMap(row: any[]): GenericEventKey[] {
     let idxMap: GenericEventKey[] = [];
     for (let fieldFromHdr of row) {
       let found = false;
@@ -95,9 +95,9 @@ const TITLE_ROW_MAP: Map<GenericEventKey, string> = new Map([
     const reqFieldNames = missingFields.map(x => `"${TITLE_ROW_MAP.get(x)}"`).join(', ');
     Util.errorAlert(`Sheet "${sheetName}" is missing ${reqFieldNames} columns. See Help for setup instructions.`);
   }
-  
+
   // Display error alert
-  static errorAlert(msg: string, evt: GenericEvent=null, ridx=0) {
+  static errorAlert(msg: string, evt: GenericEvent = null, ridx = 0) {
     const ui = SpreadsheetApp.getUi();
     if (evt) {
       ui.alert(`Skipping row: ${msg} in event "${evt.title}", row ${ridx + 1}`);

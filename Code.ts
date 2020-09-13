@@ -6,7 +6,7 @@
 
 // These imports are only used for testing. Run pretest and posttest scripts to automatically
 // uncomment and re-comment these lines.
-/*% import {Settings, AllDayValue, showSettingsDialog, getUserSettings} from './Settings'; %*/
+/*% import {Settings, AllDayValue} from './Settings'; %*/
 /*% import {Util} from './Util'; %*/
 /*% import {EventColor, GenericEvent, GenericEventKey} from './GenericEvent'; %*/
 
@@ -31,7 +31,7 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('GCalendar Sync')
     .addItem('Update from Calendar', 'syncFromCalendar')
     .addItem('Update to Calendar', 'syncToCalendar')
-    .addItem('Settings', 'showSettingsDialog')
+    .addItem('Settings', 'Settings.showSettingsDialog')
     .addToUi();
 }
 
@@ -46,11 +46,7 @@ function syncFromCalendar() {
     return;
   }
 
-  let userSettings = getUserSettings();
-  if (!userSettings) {
-    showSettingsDialog();
-    return;
-  }
+  const userSettings = Settings.loadFromPropertyService();
 
   //Logger.log('Starting sync from calendar');
   // Loop through all sheets
@@ -65,7 +61,7 @@ function syncFromCalendar() {
       // Only sync sheets that start with "Calendar ID" in cell A1
       continue;
     }
-  
+
     // Get calendar events
     const calendarId = data[Util.CALENDAR_ID_ROW][1];
     if (calendarIdsFound.indexOf(calendarId) >= 0) {
@@ -149,11 +145,7 @@ function syncToCalendar() {
     return;
   }
 
-  let userSettings = getUserSettings();
-  if (!userSettings) {
-    showSettingsDialog();
-    return;
-  }
+  const userSettings = Settings.loadFromPropertyService();
 
   //Logger.log('Starting sync to calendar');
   let scriptStart = Date.now();
@@ -174,7 +166,7 @@ function syncToCalendar() {
       Util.errorAlert(`Sheet "${sheetName}" must have a title row and at least one data row.`);
       continue;
     }
-      
+
     // Get calendar events
     const calendarId = data[Util.CALENDAR_ID_ROW][1];
     if (calendarIdsFound.indexOf(calendarId) >= 0) {
@@ -215,11 +207,11 @@ function syncToCalendar() {
     let eventsAdded = false;
     for (let ridx = Util.FIRST_DATA_ROW; ridx < data.length; ridx++) {
       let sheetEvent = GenericEvent.fromSpreadsheetRow(data[ridx], idxMap, keysToAdd,
-          userSettings.all_day_events, calTimeZone);
+        userSettings.all_day_events, calTimeZone);
 
       // If enabled, skip rows with blank/invalid start and end times
       if (userSettings.skip_blank_rows && !(sheetEvent.starttime instanceof Date) &&
-          !(sheetEvent.endtime instanceof Date)) {
+        !(sheetEvent.endtime instanceof Date)) {
         continue;
       }
 

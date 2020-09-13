@@ -1,7 +1,7 @@
-import {GenericEvent} from '../GenericEvent';
-import {Util} from '../Util';
-import {AllDayValue} from '../Settings';
-import {FakeCalendarEvent} from './FakeCalendarEvent';
+import { GenericEvent } from '../GenericEvent';
+import { Util } from '../Util';
+import { AllDayValue } from '../Settings';
+import { FakeCalendarEvent } from './FakeCalendarEvent';
 
 const DATE1 = new Date('1995-12-17T03:24:00');
 const DATE2 = new Date('1995-12-18T04:56:00');
@@ -19,7 +19,7 @@ const EVENT_ALLDAY_VALUES = ['testid4', 'Test Title 4', 'Test Description 4', 'T
   '', '', true, DATE4, DATE5];
 const EVENT_BADDATES_VALUES = ['testid5', 'Test Title 5', 'Test Description 5', 'Test Location 5',
   '', '', false, 'abc', 0]
-  const EVENT_BADCOLOR_VALUES = ['testid6', 'Test Title 6', 'Test Description 6', 'Test Location 6',
+const EVENT_BADCOLOR_VALUES = ['testid6', 'Test Title 6', 'Test Description 6', 'Test Location 6',
   '', 'foobar', false, DATE2, DATE3]
 
 const IDX_MAP = Util.createIdxMap(['Id', 'Title', 'Description', 'Location', 'Guests', 'Color',
@@ -32,7 +32,7 @@ const PACIFIC_TZ = 'America/Los_Angeles';
 
 describe('GenericEvent', () => {
   let event1: GenericEvent, event2: GenericEvent, event_noguests: GenericEvent, event_allday: GenericEvent,
-      event_allday_plusoneday: GenericEvent;
+    event_allday_plusoneday: GenericEvent;
   beforeAll(() => {
     event1 = GenericEvent.fromArray(EVENT1_VALUES);
     event2 = GenericEvent.fromArray(EVENT2_VALUES);

@@ -11,7 +11,7 @@
   </head>
   <body>
     <form id="settingsform">
-      <div style="float:right">v1.0.13</div>
+      <div style="float:right">v1.0.14</div>
       <div class="block form-group">
         <label for="begin_date">Start date (yyyy-mm-dd)</label>
         <input type='text' id="begin_date" name="begin_date" required
@@ -62,7 +62,7 @@
       document.getElementById("skip_blank_rows").checked = userSettings.skip_blank_rows;
       document.getElementById(userSettings.all_day_events).checked = true;
     }
-    google.script.run.withSuccessHandler(populateUserSettings).getUserSettingsForForm();
+    google.script.run.withSuccessHandler(populateUserSettings).convertForDialog();
     document.querySelector("#settingsform").addEventListener("submit",
       function(e)
         {
@@ -77,7 +77,7 @@
             all_day_events: document.querySelector('input[name="all_day_events"]:checked').value
           };
           // Call the function in the script to save the values.
-          google.script.run.withSuccessHandler(closeModalDialog).withFailureHandler(showErrorMsg).saveUserSettings(formValues);
+          google.script.run.withSuccessHandler(closeModalDialog).withFailureHandler(showErrorMsg).saveToPropertyService(formValues);
         });
     function closeModalDialog() {
       google.script.host.close();

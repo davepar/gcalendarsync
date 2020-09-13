@@ -18,7 +18,7 @@
     public allday: boolean,
     public starttime: Date,
     public endtime: Date
-  ) {}
+  ) { }
 
   static fromArray(params: any[]) {
     let [id, title, description, location, guests, color, allday, starttime, endtime] =
@@ -56,7 +56,7 @@
 
   // Convert a spreadsheet row to an instance of this class.
   static fromSpreadsheetRow(row: any[], idxMap: GenericEventKey[], keysToAdd: string[],
-      all_day_events: AllDayValue, timeZone = 'America/Los_Angeles') {
+    all_day_events: AllDayValue, timeZone = 'America/Los_Angeles') {
     const eventObject = row.reduce((event, value, idx) => {
       const field = idxMap[idx];
       if (field != null) {
@@ -80,7 +80,7 @@
     for (let keyToAdd of keysToAdd) {
       eventObject[keyToAdd] = (keyToAdd === 'starttime' || keyToAdd === 'endTime') ? null : '';
     }
-    let {id, title, description, location, guests, color, allday, starttime, endtime} =
+    let { id, title, description, location, guests, color, allday, starttime, endtime } =
       eventObject;
     if (all_day_events !== AllDayValue.use_column) {
       allday = (all_day_events === AllDayValue.always_all_day);
@@ -140,7 +140,7 @@
     let numChanges = 0;
     const isAllDayChanged = (this.allday !== sheetEvent.allday);
     if (this.starttime.toString() !== sheetEvent.starttime.toString() ||
-        this.endtime.toString() !== sheetEvent.endtime.toString() || isAllDayChanged) {
+      this.endtime.toString() !== sheetEvent.endtime.toString() || isAllDayChanged) {
       if (sheetEvent.allday) {
         calEvent.setAllDayDates(sheetEvent.starttime, sheetEvent.endtime);
       } else {
@@ -168,7 +168,7 @@
       }
     }
     if (this.guests !== sheetEvent.guests) {
-      const guestCal = calEvent.getGuestList().map(x => ({email: x.getEmail(), added: false}));
+      const guestCal = calEvent.getGuestList().map(x => ({ email: x.getEmail(), added: false }));
       const sheetGuests = sheetEvent.guests || '';
       let guests = sheetGuests.split(',').map((x) => x ? x.trim() : '');
       // Check guests that are already invited.
@@ -203,7 +203,7 @@
     if (!(d instanceof Date)) {
       return null
     }
-    const adjDate = d.toLocaleDateString('en-US', {timeZone});
+    const adjDate = d.toLocaleDateString('en-US', { timeZone });
     let [month, day, year] = adjDate.split('/').map(x => parseInt(x));
     return new Date(year, month - 1, day + daydelta)
   }
