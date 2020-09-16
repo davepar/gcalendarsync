@@ -151,7 +151,9 @@ function syncToCalendar() {
   let scriptStart = Date.now();
 
   // Loop through all sheets
-  const allSheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheetTimeZone = spreadsheet.getSpreadsheetTimeZone();
+  const allSheets = spreadsheet.getSheets();
   let calendarIdsFound: string[] = [];
   for (let sheet of allSheets) {
     const sheetName = sheet.getName();
@@ -207,7 +209,7 @@ function syncToCalendar() {
     let eventsAdded = false;
     for (let ridx = Util.FIRST_DATA_ROW; ridx < data.length; ridx++) {
       let sheetEvent = GenericEvent.fromSpreadsheetRow(data[ridx], idxMap, keysToAdd,
-        userSettings.all_day_events, calTimeZone);
+        userSettings.all_day_events, sheetTimeZone);
 
       // If enabled, skip rows with blank/invalid start and end times
       if (userSettings.skip_blank_rows && !(sheetEvent.starttime instanceof Date) &&

@@ -87,9 +87,9 @@
     }
     // Adjust allday events to correct time zone and add 1 day to end time
     if (allday) {
-      starttime = GenericEvent.convertToScriptTimeZone(starttime, timeZone);
+      starttime = GenericEvent.convertTimeZone(starttime, timeZone);
       if (endtime) {
-        endtime = GenericEvent.convertToScriptTimeZone(endtime, timeZone, 1);
+        endtime = GenericEvent.convertTimeZone(endtime, timeZone, 1);
       }
     }
     return new GenericEvent(id, title, description, location, guests, color, allday,
@@ -199,7 +199,7 @@
 
   // AppScripts seem to always run in Pacific time. This function will convert
   // a date to whatever time zone the script is running in.
-  static convertToScriptTimeZone(d: Date, timeZone: string, daydelta = 0) {
+  static convertTimeZone(d: Date, timeZone: string, daydelta = 0) {
     if (!(d instanceof Date)) {
       return null
     }

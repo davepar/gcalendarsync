@@ -6,8 +6,8 @@ import { FakeCalendarEvent } from './FakeCalendarEvent';
 const DATE1 = new Date('1995-12-17T03:24:00');
 const DATE2 = new Date('1995-12-18T04:56:00');
 const DATE3 = new Date('1995-12-19T07:08:00');
-const DATE4 = new Date('1995-12-20T00:00:00');
-const DATE5 = new Date('1995-12-22T00:00:00');
+const DATE4 = new Date('1995-12-20T00:00:00-08:00');
+const DATE5 = new Date('1995-12-22T00:00:00-08:00');
 
 const EVENT1_VALUES = ['testid1', 'Test Title 1', 'Test Description 1', 'Test Location 1',
   'guest1@example.com,guest2@example.com', 'ORANGE', false, DATE1, DATE2];
@@ -39,7 +39,9 @@ describe('GenericEvent', () => {
     event_noguests = GenericEvent.fromArray(EVENT_NOGUESTS_VALUES);
     event_allday = GenericEvent.fromArray(EVENT_ALLDAY_VALUES);
     const plus_one_day = Object.assign([], EVENT_ALLDAY_VALUES)
-    plus_one_day[8] = GenericEvent.convertToScriptTimeZone(plus_one_day[8], PACIFIC_TZ, 1)
+    // Convert start/end time of expected values to whole date in correct time zone and add one day to end time.
+    plus_one_day[7] = GenericEvent.convertTimeZone(plus_one_day[7], PACIFIC_TZ)
+    plus_one_day[8] = GenericEvent.convertTimeZone(plus_one_day[8], PACIFIC_TZ, 1)
     event_allday_plusoneday = GenericEvent.fromArray(plus_one_day);
   });
   it('instantiates correctly', () => {
@@ -115,16 +117,16 @@ describe('GenericEvent', () => {
     });
   });
 
-  describe('convertToScriptTimeZone', () => {
+  describe('convertTimeZone', () => {
     it('handles non-date', () => {
-      expect(GenericEvent.convertToScriptTimeZone('foo' as any, PACIFIC_TZ)).toBe(null);
+      expect(GenericEvent.convertTimeZone('foo' as any, PACIFIC_TZ)).toBe(null);
     })
     it('returns date', () => {
-      expect(GenericEvent.convertToScriptTimeZone(new Date(2020, 11, 10, 9, 8, 7), PACIFIC_TZ)).toEqual(new Date(2020, 11, 10));
+      expect(GenericEvent.convertTimeZone(new Date('2020-12-10T09:08:07.000-08:00'), PACIFIC_TZ)).toEqual(new Date(2020, 11, 10));
     })
     it('returns date - 1', () => {
       // Remember month is zero-index
-      expect(GenericEvent.convertToScriptTimeZone(new Date(2020, 11, 10, 9, 8, 7), PACIFIC_TZ, -10)).toEqual(new Date(2020, 10, 30));
+      expect(GenericEvent.convertTimeZone(new Date('2020-12-10T09:08:07.000-08:00'), PACIFIC_TZ, -10)).toEqual(new Date(2020, 10, 30));
     })
   });
 });
