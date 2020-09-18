@@ -105,9 +105,6 @@
           spreadsheetRow[idx] = !!value;
         } else if (label === 'color') {
           spreadsheetRow[idx] = value ? EventColor[Number(value) - 1] : '';
-        } else if (this.allday && (label === 'starttime' || label === 'endtime')) {
-          // Convert to a string to get around time zone issues
-          spreadsheetRow[idx] = value.toLocaleDateString('en-US');
         } else {
           spreadsheetRow[idx] = value;
         }
