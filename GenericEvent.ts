@@ -33,14 +33,14 @@
     const allday = calEvent.isAllDayEvent();
     let starttime: Date, endtime: Date;
     if (allday) {
-      starttime = calEvent.getAllDayStartDate();
-      endtime = calEvent.getAllDayEndDate();
+      starttime = calEvent.getAllDayStartDate() as Date;
+      endtime = calEvent.getAllDayEndDate() as Date;
       if (endtime.getHours() === 0 && endtime.getMinutes() === 0 && endtime.getSeconds() === 0) {
         endtime.setDate(endtime.getDate() - 1);
       }
     } else {
-      starttime = calEvent.getStartTime();
-      endtime = calEvent.getEndTime();
+      starttime = calEvent.getStartTime() as Date;
+      endtime = calEvent.getEndTime() as Date;
     }
     return new GenericEvent(
       calEvent.getId(),
