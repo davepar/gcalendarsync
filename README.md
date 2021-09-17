@@ -1,3 +1,12 @@
+# UPDATE: Unfortunately, Google has removed this add-on from their marketplace.
+
+Somehow a review was triggered again, and Google is requiring additional steps to re-publish the add-on.
+Their review was a difficult process the first time I went through it, and I don't want to do it again.
+I enjoy coding and was happy to provide this free add-on to the community. However, I don't wish to spend
+time on needless bureaucracy.
+
+Sorry, but for now the add-on is no longer available.
+
 # GCalendar Sync
 
 A Google Sheet add-on for synchronizing events with Google Calendar.
@@ -17,6 +26,3 @@ and push it to a project. Follow the instructions
 This will run the tests:
 
     $ npm test
-
-Find a bug? File an issue here on Github or email me via the link in the
-[Contact section](http://www.ballardsoftwarefoundry.com/gcalendarsync.html#contact) of the website.
