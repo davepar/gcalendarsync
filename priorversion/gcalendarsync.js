@@ -136,6 +136,33 @@ function getEndTime(ev) {
   return ev.endtime === '' ? '' : ev.endtime.getTime();
 }
 
+// Take in comma separated list of guests. Return true if regardless of ordering both strings have the same guests.
+// eg. in this case "max@gmail.com, maria@gmail.com" would be the same as "maria@gmail.com ,  max@gmail.com"
+function haveTheSameGuests(guestsString1, guestsString2) {
+  if (guestsString1 === guestsString2) {
+    return true;
+  }
+
+  var l1 = guestsString1.split(',');
+  var l2 = guestsString2.split(',');
+
+  if (l1.length !== l2.length) {
+    return false;
+  }
+
+  // make sure to trim before sorting, otherwise whitespace comes before strings starting with letters
+  var l1 = l1.map(x => x?.trim()).sort((a, b) => a.localeCompare(b));
+  var l2 = l2.map(x => x?.trim()).sort((a, b) => a.localeCompare(b));
+
+  for (var i = 0; i < l1.length; i++) {
+    if(l1[i] !== l2[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 // Determines the number of field differences between a calendar event and
 // a spreadsheet event
 function eventDifferences(convertedCalEvent, sev) {
@@ -144,7 +171,7 @@ function eventDifferences(convertedCalEvent, sev) {
     (convertedCalEvent.location !== sev.location) +
     (convertedCalEvent.starttime.toString() !== sev.starttime.toString()) +
     (getEndTime(convertedCalEvent) !== getEndTime(sev)) +
-    (convertedCalEvent.guests !== sev.guests) +
+    (!haveTheSameGuests(convertedCalEvent.guests, sev.guests)) +
     (convertedCalEvent.color !== ('' + sev.color));
   if (eventDiffs > 0 && convertedCalEvent.guests) {
     // Use a special flag value if an event changed, but it has guests.
